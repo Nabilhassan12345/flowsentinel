@@ -52,3 +52,12 @@ htmlcov/
 
 # pytest
 .pytest_cache/
+
+# Database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+flowsentinel.db
+alembic/versions/*.py
+!alembic/versions/__init__.py
