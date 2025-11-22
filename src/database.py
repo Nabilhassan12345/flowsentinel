@@ -2,22 +2,28 @@
 FlowSentinel Database Configuration
 
 SQLAlchemy engine and session management.
-Supports PostgreSQL (production), MySQL, and SQLite (development).
+Supports PostgreSQL (production) and SQLite (development).
 """
 
 import os
+import sys
 from contextlib import contextmanager
 from typing import Generator
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.pool import NullPool
-
-from src.models import Base
 
 # Load environment variables
 load_dotenv()
+
+# Import models with proper path handling
+try:
+    from src.models import Base
+except ModuleNotFoundError:
+    # If running directly, add parent directory to path
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from src.models import Base
 
 
 # ============================================================================
@@ -25,55 +31,45 @@ load_dotenv()
 # ============================================================================
 
 # Get database URL from environment
+# Default: SQLite for easy local testing
+# PostgreSQL: postgresql://user:pass@localhost:5432/flowsentinel
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "sqlite:///./flowsentinel.db",  # Default to SQLite for development
+    "sqlite:///./flowsentinel.db",
 )
 
-# Create engine
-# For production PostgreSQL, use:
-# postgresql://user:password@localhost:5432/flowsentinel
+# Create engine with appropriate configuration
 if "sqlite" in DATABASE_URL:
     # SQLite configuration (development)
     engine = create_engine(
         DATABASE_URL,
-        echo=os.getenv("DEBUG", "False").lower() == "true",
-        poolclass=NullPool,  # SQLite doesn't need connection pooling
+        echo=False,  # Set to True for debugging
+        connect_args={"check_same_thread": False},  # Needed for SQLite
     )
 else:
     # PostgreSQL/MySQL configuration (production)
     engine = create_engine(
         DATABASE_URL,
-        echo=os.getenv("DEBUG", "False").lower() == "true",
+        echo=False,  # Set to True for debugging
+        pool_size=5,  # Connection pool size
+        max_overflow=10,  # Max overflow connections
         pool_pre_ping=True,  # Verify connections before using
-        pool_size=10,  # Max connections
-        max_overflow=20,  # Max overflow connections
     )
 
-# Create session factory
+# Create SessionLocal class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 # ============================================================================
-# DATABASE UTILITIES
+# DATABASE DEPENDENCY
 # ============================================================================
-
-
-def init_db():
-    """
-    Initialize database (create all tables).
-    Call this once when starting the application.
-    """
-    Base.metadata.create_all(bind=engine)
-    print("✅ Database tables created successfully")
 
 
 def get_db() -> Generator[Session, None, None]:
     """
-    Dependency for FastAPI endpoints.
-    Provides a database session and ensures it's closed after use.
+    FastAPI dependency for database sessions.
     
-    Usage in FastAPI:
+    Usage:
         @app.get("/items")
         def get_items(db: Session = Depends(get_db)):
             return db.query(ItemDB).all()
@@ -83,6 +79,52 @@ def get_db() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
+
+
+# ============================================================================
+# DATABASE UTILITIES
+# ============================================================================
+
+
+def init_db():
+    """Initialize database - create all tables."""
+    Base.metadata.create_all(bind=engine)
+    print("✅ Database initialized")
+
+
+def reset_db():
+    """Drop all tables and recreate (for testing)."""
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    print("🔄 Database reset")
+
+
+def get_db_sync() -> Session:
+    """Get database session synchronously (for scripts)."""
+    return SessionLocal()
+
+
+def test_connection() -> bool:
+    """
+    Test database connection.
+    
+    Returns:
+        True if connection successful, False otherwise.
+    """
+    try:
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db.close()
+        print("✅ Database connection successful")
+        return True
+    except Exception as e:
+        print(f"❌ Database connection failed: {e}")
+        return False
+
+
+# ============================================================================
+# CONTEXT MANAGER (BONUS)
+# ============================================================================
 
 
 @contextmanager
@@ -102,39 +144,6 @@ def get_db_context() -> Generator[Session, None, None]:
         db.close()
 
 
-def reset_db():
-    """
-    Drop and recreate all tables (USE WITH CAUTION).
-    Only use in development/testing.
-    """
-    if os.getenv("ENVIRONMENT", "development") == "production":
-        raise RuntimeError("❌ Cannot reset database in production!")
-    
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
-    print("✅ Database reset successfully")
-
-
-# ============================================================================
-# HEALTH CHECK
-# ============================================================================
-
-
-def check_db_connection() -> bool:
-    """
-    Check if database connection is healthy.
-    Returns True if connected, False otherwise.
-    """
-    try:
-        with engine.connect() as connection:
-            from sqlalchemy import text
-            connection.execute(text("SELECT 1"))
-        return True
-    except Exception as e:
-        print(f"❌ Database connection failed: {e}")
-        return False
-
-
 # ============================================================================
 # EXAMPLE USAGE
 # ============================================================================
@@ -145,16 +154,14 @@ if __name__ == "__main__":
     # Initialize database
     init_db()
     
-    # Check connection
-    if check_db_connection():
-        print("✅ Database connection successful")
+    # Test connection
+    if test_connection():
+        # Example: Create a session and query
+        with get_db_context() as db:
+            from src.models import EventDB
+            
+            # Count events
+            count = db.query(EventDB).count()
+            print(f"📈 Total events in database: {count}")
     else:
-        print("❌ Database connection failed")
-    
-    # Example: Create a session and query
-    with get_db_context() as db:
-        from src.models import EventDB
-        
-        # Count events
-        count = db.query(EventDB).count()
-        print(f"📈 Total events in database: {count}")
+        print("❌ Cannot query database - connection failed")
