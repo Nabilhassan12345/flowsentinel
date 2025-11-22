@@ -36,25 +36,25 @@ jobs:
     # Step 4: Lint with flake8
     - name: Lint with flake8
       run: |
-        # Stop the build if there are Python syntax errors or undefined names
-        flake8 main.py demo.py test_api.py --count --select=E9,F63,F7,F82 --show-source --statistics
-        # Exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 main.py demo.py test_api.py --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        # Run flake8 on the actual source and test locations
+        flake8 src/main.py tests/demo.py tests/test_api.py --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all other errors as warnings
+        flake8 src/main.py tests/demo.py tests/test_api.py --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       continue-on-error: true
     
     # Step 5: Check code formatting with black
     - name: Check code formatting with black
       run: |
-        black --check --diff main.py demo.py test_api.py
+        black --check --diff src/main.py tests/demo.py tests/test_api.py
       continue-on-error: true
     
     # Step 6: Start server and run API tests
     - name: Test API endpoints
       run: |
-        # Start server in background
-        python main.py &
+        # Start server in background (use src/main.py)
+        python src/main.py &
         SERVER_PID=$!
-        
+
         # Wait for server to start
         echo "Waiting for server to start..."
         for i in {1..30}; do
@@ -64,23 +64,23 @@ jobs:
           fi
           sleep 1
         done
-        
-        # Run tests
-        python test_api.py || true
-        
+
+        # Run tests (use tests/test_api.py)
+        python tests/test_api.py || true
+
         # Stop server
-        kill $SERVER_PID
+        kill $SERVER_PID || true
     
     # Step 7: Health check
     - name: Server health check
       run: |
-        # Start server in background
-        python main.py &
+        # Start server in background (use src/main.py)
+        python src/main.py &
         SERVER_PID=$!
-        
+
         # Wait and check health
         sleep 5
         curl -f http://localhost:8000/health || exit 1
-        
+
         # Stop server
-        kill $SERVER_PID
+        kill $SERVER_PID || true
