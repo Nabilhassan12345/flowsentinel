@@ -41,9 +41,8 @@ WORKDIR /app
 COPY --from=builder /root/.local /root/.local
 
 # Copy application files
-COPY main.py .
-COPY demo.py .
-COPY test_api.py .
+COPY src/main.py ./src/
+COPY tests/demo.py tests/test_api.py ./tests/
 COPY .env.example .
 
 # Create a non-root user for security
@@ -61,4 +60,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health', timeout=3)"
 
 # Run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

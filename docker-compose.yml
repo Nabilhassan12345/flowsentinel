@@ -47,9 +47,8 @@ services:
     # Volume mounts for development (hot reload)
     # Comment out for production deployment
     volumes:
-      - ./main.py:/app/main.py
-      - ./demo.py:/app/demo.py
-      - ./test_api.py:/app/test_api.py
+      - ./src:/app/src
+      - ./tests:/app/tests
       # Note: .env is NOT mounted for security (use env_file instead)
     
     # Health check configuration

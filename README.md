@@ -1,535 +1,1428 @@
-# 🧠 FlowSentinel - Agentic Company Brain
+# 🧠 FlowSentinel - Agentic Company Brain# 🧠 FlowSentinel# 🧠 FlowSentinel - Agentic Company Brain
 
-> An intelligent workflow monitoring system that acts as your team's digital brain, ingesting events from Slack, Jira, GitHub, and Calendar to detect risks, identify blockers, and automate responses using IBM watsonx.ai and watsonx Orchestrate.
 
-[![Tests](https://github.com/YOUR_USERNAME/flowsentinel/workflows/Tests/badge.svg)](https://github.com/YOUR_USERNAME/flowsentinel/actions)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+
+> **An intelligent workflow monitoring system that acts as your team's digital brain**  
+
+> Ingests events from Slack, Jira, GitHub, and Calendar—detects risks, identifies blockers, and automates responses using IBM watsonx.ai and watsonx Orchestrate.
+
+> **Agentic AI Company Brain for Workflow Monitoring**  > An intelligent workflow monitoring system that acts as your team's digital brain, ingesting events from Slack, Jira, GitHub, and Calendar to detect risks, identify blockers, and automate responses using IBM watsonx.ai and watsonx Orchestrate.
+
+[![Tests](https://github.com/Nabilhassan12345/flowsentinel/workflows/Tests/badge.svg)](https://github.com/Nabilhassan12345/flowsentinel/actions)
+
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)> An intelligent system that ingests events from Slack, Jira, GitHub, and Calendar—detects risks, identifies blockers, and automates responses using IBM watsonx.ai and watsonx Orchestrate.
+
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-009688.svg)](https://fastapi.tiangolo.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
----
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)[![Tests](https://github.com/YOUR_USERNAME/flowsentinel/workflows/Tests/badge.svg)](https://github.com/YOUR_USERNAME/flowsentinel/actions)
+
+
+
+---[![Tests](https://github.com/Nabilhassan12345/flowsentinel/workflows/Tests/badge.svg)](https://github.com/Nabilhassan12345/flowsentinel/actions)[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+
+
+
+## ✨ What It Does[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)[![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-009688.svg)](https://fastapi.tiangolo.com/)
+
+
+
+FlowSentinel is an **agentic AI backend** that monitors team workflows and takes automated actions:[![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-009688.svg)](https://fastapi.tiangolo.com/)[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
+
+- **📥 Multi-Source Event Ingestion** — Collects data from Slack, Jira, GitHub, Calendar[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+- **🤖 AI-Powered Analysis** — Detects blockers ("blocked", "stuck", "waiting") and deadline risks
+
+- **🚨 Smart Alerts** — Automatically sends Slack notifications for critical issues---
+
+- **📊 Automated Actions** — Creates tasks, generates reports, escalates via Orchestrate
+
+- **💬 Natural Language Q&A** — Ask "Is the project at risk?" and get intelligent answers---
+
+- **🚦 Health Monitoring** — 🟢 GREEN / 🟡 YELLOW / 🔴 RED status indicators
 
 ## 🎯 **What We Built**
 
+---
+
+## ✨ What It Does
+
+## 🏗️ Architecture
+
 This is a **fully functional agentic AI backend** that monitors team workflows across multiple platforms and takes automated actions. Think of it as an AI-powered project manager that never sleeps.
 
-### **The Problem We Solved:**
-Teams use multiple tools (Slack, Jira, GitHub, Calendar) and important information gets lost. Blockers go unnoticed, deadlines slip, and communication breaks down. We built FlowSentinel to solve this.
+```
 
-### **What It Does:**
-1. **📥 Ingests Events** - Collects data from Slack messages, Jira updates, GitHub PRs, and calendar changes
-2. **🤖 AI Analysis** - Uses IBM watsonx.ai to understand project state, detect blockers, and identify risks
-3. **🚨 Smart Alerts** - Automatically sends Slack notifications when critical issues are detected
-4. **📊 Auto-Actions** - Creates tasks, generates reports, and escalates issues via IBM watsonx Orchestrate
-5. **💬 Q&A System** - Ask natural language questions like "Is the project at risk?" and get intelligent answers
+flowsentinel/FlowSentinel is an **agentic AI backend** that acts as your team's digital brain:
 
-### **Technical Highlights:**
-- ✅ **11 REST API Endpoints** - Complete CRUD operations for events, state, actions, and Q&A
-- ✅ **Real-time Health Monitoring** - 🟢 GREEN / 🟡 YELLOW / 🔴 RED status indicators
-- ✅ **Intelligent Blocker Detection** - Scans messages for keywords like "blocked", "stuck", "waiting"
-- ✅ **Risk Assessment Engine** - Identifies deadline changes and delayed tasks
-- ✅ **Natural Language Processing** - Context-aware Q&A with reasoning steps
-- ✅ **Slack Integration** - Real webhook notifications (optional)
-- ✅ **Docker Ready** - Complete containerization with docker-compose
-- ✅ **CI/CD Pipeline** - GitHub Actions for automated testing
-- ✅ **Production-Ready** - Proper error handling, logging, health checks
+├── src/
 
----
+│   └── main.py              # Core FastAPI application (933 lines)### **The Problem We Solved:**
 
-## 📖 Overview
+├── tests/
 
-FlowSentinel is an agentic AI system that continuously monitors your team's workflow across multiple platforms. It doesn't just collect data—it **understands context**, **detects problems**, and **takes action automatically**.
+│   ├── test_api.py          # Comprehensive API tests- **📥 Multi-Source Event Ingestion** — Collects data from Slack messages, Jira updates, GitHub PRs, calendar changesTeams use multiple tools (Slack, Jira, GitHub, Calendar) and important information gets lost. Blockers go unnoticed, deadlines slip, and communication breaks down. We built FlowSentinel to solve this.
 
-### What Makes It Special?
+│   └── demo.py              # Interactive demonstration
 
-- 🤖 **Agentic AI**: Autonomous decision-making based on project state
-- 🔍 **Cross-Platform Intelligence**: Connects dots across Slack, Jira, GitHub, Calendar
-- 🚨 **Proactive Alerts**: Detects blockers before they become critical
-- 💬 **Natural Language Q&A**: Ask about your project in plain English
-- ⚡ **Automated Actions**: Auto-notifies, creates tasks, generates reports
+├── docs/- **🤖 AI-Powered Analysis** — Uses IBM watsonx.ai to understand project state, detect blockers ("blocked", "stuck", "waiting"), identify deadline risks
 
----
+│   ├── DOCKER.md            # Docker deployment guide
 
-## ✨ Features
+│   └── CI-CD.md             # GitHub Actions setup- **🚨 Smart Alerts** — Automatically sends Slack notifications when critical issues surface### **What It Does:**
 
-### Core Capabilities
-- ✅ **Multi-Source Event Ingestion** - Real-time data from Slack, Jira, GitHub, Calendar
-- ✅ **AI-Powered Analysis** - IBM watsonx.ai for intelligent state understanding
-- ✅ **Smart Blocker Detection** - Scans messages for keywords like "blocked", "stuck", "waiting"
-- ✅ **Risk Assessment** - Identifies deadline changes and delayed tasks
-- ✅ **Automated Actions** - IBM watsonx Orchestrate skills (notify, create tasks, reports)
-- ✅ **Natural Language Q&A** - Ask questions, get intelligent answers with reasoning
-- ✅ **Health Status Monitoring** - 🟢 GREEN / 🟡 YELLOW / 🔴 RED indicators
-- ✅ **Real Slack Integration** - Actual webhook notifications (optional)
-- ✅ **RESTful API** - Clean, documented endpoints with FastAPI
-- ✅ **Interactive Docs** - Auto-generated Swagger UI
+├── scripts/
 
----
+│   ├── start.sh             # Quick server start- **📊 Automated Actions** — Creates tasks, generates reports, escalates via IBM watsonx Orchestrate1. **📥 Ingests Events** - Collects data from Slack messages, Jira updates, GitHub PRs, and calendar changes
 
-## �️ Tech Stack
+│   ├── setup.sh             # Environment setup
 
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **Framework** | FastAPI 0.104.1 | High-performance async web framework |
-| **Server** | Uvicorn | ASGI server with hot reload |
-| **Validation** | Pydantic v2 | Type-safe data models |
-| **AI Engine** | IBM watsonx.ai | Event analysis & state generation (simulated) |
-| **Automation** | IBM watsonx Orchestrate | Action execution (simulated) |
-| **HTTP Client** | httpx + requests | Async/sync HTTP requests |
-| **Storage** | In-Memory (MVP) | Lists/dicts (ready for PostgreSQL) |
-| **Config** | python-dotenv | Environment variable management |
-| **Date Handling** | python-dateutil | Advanced datetime operations |
+│   └── git-setup.sh         # Git initialization- **💬 Natural Language Q&A** — Ask "Is the project at risk?" and get intelligent answers with reasoning steps2. **🤖 AI Analysis** - Uses IBM watsonx.ai to understand project state, detect blockers, and identify risks
 
----
+├── .github/
 
-## �🚀 Quick Start
+│   └── workflows/- **🚦 Real-Time Health Monitoring** — 🟢 GREEN / 🟡 YELLOW / 🔴 RED status indicators3. **🚨 Smart Alerts** - Automatically sends Slack notifications when critical issues are detected
 
-### Prerequisites
+│       └── test.yml         # CI/CD pipeline
 
-- Python 3.8 or higher
-- pip (Python package manager)
-- Terminal/Command line access
+├── requirements.txt         # Production dependencies4. **📊 Auto-Actions** - Creates tasks, generates reports, and escalates issues via IBM watsonx Orchestrate
+
+├── requirements-dev.txt     # Development tools
+
+├── docker-compose.yml       # Container orchestration---5. **💬 Q&A System** - Ask natural language questions like "Is the project at risk?" and get intelligent answers
+
+└── Dockerfile               # Multi-stage build
+
+```
+
+
+
+---## 🏗️ Architecture### **Technical Highlights:**
+
+
+
+## 🚀 Quick Start- ✅ **11 REST API Endpoints** - Complete CRUD operations for events, state, actions, and Q&A
+
+
+
+### Prerequisites```- ✅ **Real-time Health Monitoring** - 🟢 GREEN / 🟡 YELLOW / 🔴 RED status indicators
+
+
+
+- Python 3.11+┌─────────────────────────────────────────────────────────────────┐- ✅ **Intelligent Blocker Detection** - Scans messages for keywords like "blocked", "stuck", "waiting"
+
+- pip
+
+│                      FlowSentinel System                        │- ✅ **Risk Assessment Engine** - Identifies deadline changes and delayed tasks
 
 ### Installation
 
-**Option 1: Using setup script (Recommended)**
+├─────────────────────────────────────────────────────────────────┤- ✅ **Natural Language Processing** - Context-aware Q&A with reasoning steps
+
 ```bash
-# Navigate to project directory
-cd flowsentinel
 
-# Run automated setup
-chmod +x setup.sh
-./setup.sh
+# Clone repository│                                                                 │- ✅ **Slack Integration** - Real webhook notifications (optional)
 
-# Activate virtual environment
-source venv/bin/activate
-```
+git clone https://github.com/Nabilhassan12345/flowsentinel.git
 
-**Option 2: Manual setup**
-```bash
-# Create virtual environment
+cd flowsentinel│  📥 Event Ingestion                                            │- ✅ **Docker Ready** - Complete containerization with docker-compose
+
+
+
+# Quick setup (automated)│     Slack │ Jira │ GitHub │ Calendar                           │- ✅ **CI/CD Pipeline** - GitHub Actions for automated testing
+
+chmod +x scripts/setup.sh
+
+./scripts/setup.sh│                    ↓                                            │- ✅ **Production-Ready** - Proper error handling, logging, health checks
+
+
+
+# Or manual setup│  🔄 FastAPI REST API (11 Endpoints)                            │
+
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install dependencies
+source venv/bin/activate│                    ↓                                            │---
+
 pip install -r requirements.txt
 
-# Create environment file
-cp .env.example .env
-```
+```│  💾 In-Memory Database (MVP)                                   │
 
-### Running the Server
+
+
+### Run the Server│     Events │ State │ Actions │ Q&A History                     │## 📖 Overview
+
+
+
+```bash│                    ↓                                            │
+
+# Quick start
+
+./scripts/start.sh│  🧠 WatsonxAgent (AI Analysis Engine)                          │FlowSentinel is an agentic AI system that continuously monitors your team's workflow across multiple platforms. It doesn't just collect data—it **understands context**, **detects problems**, and **takes action automatically**.
+
+
+
+# Or manual│     • Blocker Detection (keyword scan)                         │
+
+python src/main.py
+
+```│     • Risk Assessment (deadline changes)                       │### What Makes It Special?
+
+
+
+Server will start at: **http://localhost:8000**  │     • Status Calculation (RED/YELLOW/GREEN)                    │
+
+Interactive docs: **http://localhost:8000/docs**
+
+│     • Natural Language Q&A                                     │- 🤖 **Agentic AI**: Autonomous decision-making based on project state
+
+### Test the API
+
+│                    ↓                                            │- 🔍 **Cross-Platform Intelligence**: Connects dots across Slack, Jira, GitHub, Calendar
 
 ```bash
-# Start the FastAPI server
-python main.py
+
+# In a new terminal│  ⚡ OrchestrateBridge (Automated Actions)                      │- 🚨 **Proactive Alerts**: Detects blockers before they become critical
+
+python tests/test_api.py
+
+│     • Slack Notifications (real webhook)                       │- 💬 **Natural Language Q&A**: Ask about your project in plain English
+
+# Or run the demo
+
+python tests/demo.py│     • Task Creation (simulated Jira)                           │- ⚡ **Automated Actions**: Auto-notifies, creates tasks, generates reports
+
 ```
 
-You should see:
-```
-🚀 FlowSentinel Backend Started
-📊 Dashboard: http://localhost:8000/docs
-🧠 Watsonx.ai Integration: Ready
-🤖 Orchestrate Bridge: Ready
-```
-
-**Access Points:**
-- 🌐 API Server: http://localhost:8000
-- 📚 Interactive Docs: http://localhost:8000/docs
-- 📖 ReDoc: http://localhost:8000/redoc
-
-### Testing Endpoints
-
-**Option 1: Using the demo script (Recommended)**
-```bash
-# In a new terminal (keep server running)
-python demo.py
-```
-
-**Option 2: Using the comprehensive test suite**
-```bash
-python test_api.py
-```
-
-**Option 3: Manual curl commands**
-```bash
-# Load simulation data
-curl -X POST http://localhost:8000/simulation/run
-
-# Run agent analysis
-curl -X POST http://localhost:8000/agent/run
-
-# Check project status
-curl http://localhost:8000/state/latest
-
-# Ask a question
-curl -X POST http://localhost:8000/qa/ask \
-  -H "Content-Type: application/json" \
-  -d '{"question": "Is the project at risk?"}'
-```
+│     • Report Generation                                        │
 
 ---
+
+│                                                                 │---
 
 ## 📡 API Endpoints
 
-### Health & Info
-```
-GET  /           # API information
-GET  /health     # Health check with metrics
-```
+└─────────────────────────────────────────────────────────────────┘
+
+### Core Endpoints
+
+- `GET /` - API information```## ✨ Features
+
+- `GET /health` - Health check with metrics
+
+
 
 ### Event Management
-```
-POST /events/ingest        # Ingest single event
-POST /events/ingest/batch  # Ingest multiple events
-GET  /events/list          # List recent events (supports ?limit=N)
-POST /simulation/run       # Load 8 demo events
-```
+
+- `POST /events/ingest` - Ingest single event---### Core Capabilities
+
+- `POST /events/ingest/batch` - Ingest multiple events
+
+- `GET /events/list` - List recent events- ✅ **Multi-Source Event Ingestion** - Real-time data from Slack, Jira, GitHub, Calendar
+
+- `POST /simulation/run` - Load demo data (8 realistic events)
+
+## 🚀 Quick Start- ✅ **AI-Powered Analysis** - IBM watsonx.ai for intelligent state understanding
 
 ### Agent Operations
-```
-POST /agent/run      # Run AI analysis + trigger actions
-GET  /state/latest   # Get current project state
-GET  /actions/list   # List executed actions (supports ?limit=N)
-```
 
-### Q&A
-```
-POST /qa/ask         # Ask natural language questions
-```
+- `POST /agent/run` - Run AI analysis + trigger actions- ✅ **Smart Blocker Detection** - Scans messages for keywords like "blocked", "stuck", "waiting"
+
+- `GET /state/latest` - Get current project state
+
+- `GET /actions/list` - List executed actions### Prerequisites- ✅ **Risk Assessment** - Identifies deadline changes and delayed tasks
+
+
+
+### Q&A- ✅ **Automated Actions** - IBM watsonx Orchestrate skills (notify, create tasks, reports)
+
+- `POST /qa/ask` - Ask natural language questions
+
+- Python 3.11+- ✅ **Natural Language Q&A** - Ask questions, get intelligent answers with reasoning
 
 **Full API Documentation:** Visit http://localhost:8000/docs when server is running
 
+- pip- ✅ **Health Status Monitoring** - 🟢 GREEN / 🟡 YELLOW / 🔴 RED indicators
+
 ---
 
-## 🔐 Environment Variables
+- (Optional) Docker for containerized deployment- ✅ **Real Slack Integration** - Actual webhook notifications (optional)
 
-Copy `.env.example` to `.env` and configure:
+## 🐳 Docker Deployment
+
+- ✅ **RESTful API** - Clean, documented endpoints with FastAPI
+
+### Using Docker Compose (Recommended)
+
+### 1. Clone & Setup- ✅ **Interactive Docs** - Auto-generated Swagger UI
+
+```bash
+
+# Build and run
+
+docker-compose up --build
+
+```bash---
+
+# Run in background
+
+docker-compose up -d# Clone repository
+
+
+
+# View logsgit clone https://github.com/Nabilhassan12345/flowsentinel.git## �️ Tech Stack
+
+docker-compose logs -f
+
+cd flowsentinel
+
+# Stop
+
+docker-compose down| Component | Technology | Purpose |
+
+```
+
+# Run automated setup|-----------|-----------|---------|
+
+### Using Docker
+
+chmod +x scripts/setup.sh| **Framework** | FastAPI 0.104.1 | High-performance async web framework |
+
+```bash
+
+# Build image./scripts/setup.sh| **Server** | Uvicorn | ASGI server with hot reload |
+
+docker build -t flowsentinel .
+
+| **Validation** | Pydantic v2 | Type-safe data models |
+
+# Run container
+
+docker run -d -p 8000:8000 --env-file .env flowsentinel# Activate virtual environment| **AI Engine** | IBM watsonx.ai | Event analysis & state generation (simulated) |
+
+```
+
+source venv/bin/activate| **Automation** | IBM watsonx Orchestrate | Action execution (simulated) |
+
+**See [docs/DOCKER.md](docs/DOCKER.md) for complete Docker guide**
+
+```| **HTTP Client** | httpx + requests | Async/sync HTTP requests |
+
+---
+
+| **Storage** | In-Memory (MVP) | Lists/dicts (ready for PostgreSQL) |
+
+## 🔐 Environment Configuration
+
+### 2. Configure (Optional)| **Config** | python-dotenv | Environment variable management |
+
+Create `.env` file (optional for demo mode):
+
+| **Date Handling** | python-dateutil | Advanced datetime operations |
+
+```bash
+
+# Copy example```bash
+
+cp .env.example .env
+
+# Copy environment template---
+
+# Edit with your credentials
+
+nano .envcp .env.example .env
+
+```
+
+## �🚀 Quick Start
 
 ### Required for Production
-```bash
-# IBM watsonx.ai (for real AI analysis)
-WATSONX_API_KEY=your_api_key_here
-WATSONX_PROJECT_ID=your_project_id
-WATSONX_URL=https://us-south.ml.cloud.ibm.com
 
-# IBM watsonx Orchestrate (for real automation)
-ORCHESTRATE_API_KEY=your_api_key_here
-ORCHESTRATE_INSTANCE_ID=your_instance_id
-ORCHESTRATE_URL=https://your-instance.watsonx-orchestrate.ibm.com
-```
+# Add your Slack webhook for real notifications
 
-### Optional (Enhances Features)
 ```bash
-# Slack Integration (enables real notifications)
+
+# IBM watsonx.ai# Edit .env and set SLACK_WEBHOOK_URL### Prerequisites
+
+WATSONX_API_KEY=your_api_key
+
+WATSONX_PROJECT_ID=your_project_id```
+
+
+
+# IBM watsonx Orchestrate- Python 3.8 or higher
+
+ORCHESTRATE_API_KEY=your_api_key
+
+ORCHESTRATE_INSTANCE_ID=your_instance_id### 3. Start Server- pip (Python package manager)
+
+
+
+# Slack (optional but recommended)- Terminal/Command line access
+
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 
-# GitHub Integration (for future features)
-GITHUB_TOKEN=ghp_your_token_here
-GITHUB_REPO_OWNER=your-username
-GITHUB_REPO_NAME=your-repo
+``````bash
 
-# Application Settings
-APP_PORT=8000
-LOG_LEVEL=INFO
+
+
+**Note:** System works in simulation mode without any API keys!# Quick start### Installation
+
+
+
+---./scripts/start.sh
+
+
+
+## 🧪 Testing**Option 1: Using setup script (Recommended)**
+
+
+
+### Run All Tests# Or manually```bash
+
+
+
+```bashpython src/main.py# Navigate to project directory
+
+python tests/test_api.py
+
+``````cd flowsentinel
+
+
+
+### Run Demo
+
+
+
+```bashServer runs at: **http://localhost:8000**  # Run automated setup
+
+python tests/demo.py
+
+```Interactive docs: **http://localhost:8000/docs**chmod +x setup.sh
+
+
+
+### CI/CD./setup.sh
+
+
+
+GitHub Actions automatically runs tests on every push. See `.github/workflows/test.yml`### 4. Test It
+
+
+
+**See [docs/CI-CD.md](docs/CI-CD.md) for CI/CD setup guide**# Activate virtual environment
+
+
+
+---```bashsource venv/bin/activate
+
+
+
+## 💻 Development# Run comprehensive test suite```
+
+
+
+### Install Dev Dependenciespython tests/test_api.py
+
+
+
+```bash**Option 2: Manual setup**
+
+pip install -r requirements-dev.txt
+
+```# Or run interactive demo```bash
+
+
+
+### Code Qualitypython tests/demo.py# Create virtual environment
+
+
+
+```bash```python3 -m venv venv
+
+# Format code
+
+black src/ tests/source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+
+
+# Lint code---
+
+flake8 src/ tests/
+
+# Install dependencies
+
+# Type checking
+
+mypy src/## 📡 API Endpointspip install -r requirements.txt
+
 ```
 
-**Note:** For MVP/demo, NO environment variables are required! System works with simulation mode.
+
+
+### Project Structure
+
+### Core Operations# Create environment file
+
+- **`src/main.py`** — Core FastAPI application with Database, WatsonxAgent, OrchestrateBridge
+
+- **`tests/test_api.py`** — Comprehensive test suite (10+ test functions)cp .env.example .env
+
+- **`tests/demo.py`** — Interactive demonstration script
+
+- **`docs/`** — Complete documentation guides| Method | Endpoint | Description |```
+
+- **`scripts/`** — Automation scripts for setup, start, git operations
+
+|--------|----------|-------------|
 
 ---
 
-## 📁 Project Structure
+| `GET` | `/` | API information and version |### Running the Server
 
-```
-flowsentinel/
-├── main.py              # Main FastAPI application (650+ lines)
-│   ├── Database         # In-memory storage class
-│   ├── WatsonxAgent     # AI analysis engine
-│   ├── OrchestrateBridge # Action execution
-│   └── API Endpoints    # 11 REST endpoints
-├── demo.py              # Interactive demo script
-├── test_api.py          # Comprehensive test suite
-├── requirements.txt     # Python dependencies
-├── .env.example         # Environment variable template
-├── .gitignore           # Git ignore rules
-├── setup.sh             # Automated setup script
-└── README.md            # This file
-```
+## 📊 How It Works
 
-### Key Components
-
-**`Database` Class**
-- In-memory storage for events, state, actions
-- Easy to swap for PostgreSQL later
-
-**`WatsonxAgent` Class**
-- Analyzes events to detect blockers/risks
-- Calculates project health status
-- Answers natural language questions
-
-**`OrchestrateBridge` Class**
-- Executes automated skills
-- Real Slack webhook integration
-- Simulated task creation & reports
-
----
-
-## 🎮 Demo Instructions
-
-### Full Demo Sequence
-
-1. **Start the server:**
-   ```bash
-   python main.py
-   ```
-
-2. **Run the demo script** (in a new terminal):
-   ```bash
-   python demo.py
-   ```
-
-3. **What you'll see:**
-   - ✅ Health check
-   - 📥 8 events loaded (Slack messages, Jira updates, GitHub PRs)
-   - 🤖 Agent analysis detecting 1 blocker + 2 risks
-   - 🚦 Status: YELLOW (warning level)
-   - 📬 Slack notification sent (if webhook configured)
-   - 📋 Escalation task created
-   - 💬 Q&A with 3 sample questions
-   - 📊 Summary of all actions taken
-
-### Understanding the Simulation
-
-The demo creates a realistic scenario:
-- **Blocker:** "Backend is blocked waiting on design schema"
-- **Risk 1:** Landing Page Schema delayed
-- **Risk 2:** API Integration deadline changed
-- **Result:** Project status = YELLOW (1 blocker + 2 risks)
-
----
-
-## � Development Tips
-
-### Running in Development Mode
-
-```bash
-# Auto-reload on file changes (default in main.py)
-python main.py
-
-# Manual reload with uvicorn
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-### Testing Individual Endpoints
-
-```bash
-# Test health
-curl http://localhost:8000/health
-
-# Test with pretty output
-curl http://localhost:8000/state/latest | python -m json.tool
-```
-
-### Adding New Event Sources
-
-1. Add event type to `Event.source` enum in `main.py`
-2. Update `WatsonxAgent.analyze_state()` to process new events
-3. Add sample events to `/simulation/run` endpoint
-
-### Customizing Analysis Logic
-
-Edit `WatsonxAgent.analyze_state()` in `main.py`:
-- Modify blocker keywords (line ~250)
-- Adjust risk detection logic (line ~260)
-- Change status calculation thresholds (line ~295)
-
----
-
-## 🔧 Troubleshooting
-
-### Server Won't Start
-
-**Problem:** `Address already in use`
-```bash
-# Find process using port 8000
-lsof -i :8000
-
-# Kill the process
-kill -9 <PID>
-```
-
-**Problem:** `ModuleNotFoundError`
-```bash
-# Ensure virtual environment is activated
-source venv/bin/activate
-
-# Reinstall dependencies
-pip install -r requirements.txt
-```
-
-### Agent Returns 400 Error
-
-**Problem:** `No events to analyze`
-```bash
-# Solution: Load simulation data first
-curl -X POST http://localhost:8000/simulation/run
-curl -X POST http://localhost:8000/agent/run
-```
-
-### Slack Notifications Not Working
-
-**Problem:** No webhook configured
-```bash
-# Check console for message like:
-# "ℹ️ Slack webhook not configured"
-
-# Solution: Add webhook to .env
-echo "SLACK_WEBHOOK_URL=https://hooks.slack.com/..." >> .env
-
-# Restart server
-```
-
-### Tests Failing
-
-**Problem:** Server not running
-```bash
-# Start server first
-python main.py
-
-# Then run tests in new terminal
-python test_api.py
-```
-
----
-
-## 🎓 How It Works
+| `GET` | `/health` | Health check with metrics |
 
 ### Analysis Algorithm
 
-1. **Event Collection:** Gather last 20 events from database
-2. **Blocker Detection:** Scan Slack messages for keywords:
-   - "blocked", "waiting", "stuck", "can't proceed", "need", "missing"
-3. **Risk Identification:** Find Jira deadline changes and delays
-4. **Completion Tracking:** Identify merged PRs and completed tasks
+```bash
+
+1. **Event Collection** — Gather last 20 events from database
+
+2. **Blocker Detection** — Scan Slack messages for keywords: "blocked", "waiting", "stuck", "can't proceed"### Event Management# Start the FastAPI server
+
+3. **Risk Identification** — Find Jira deadline changes and delays
+
+4. **Completion Tracking** — Identify merged PRs and completed taskspython main.py
+
 5. **Status Calculation:**
-   - 🔴 **RED:** 2+ blockers OR 2+ risks
-   - 🟡 **YELLOW:** 1+ blockers OR 1+ risks
-   - 🟢 **GREEN:** No blockers or risks
+
+   - 🔴 **RED:** 2+ blockers OR 2+ risks| Method | Endpoint | Description |```
+
+   - 🟡 **YELLOW:** 1+ blocker OR 1+ risk
+
+   - 🟢 **GREEN:** No blockers or risks|--------|----------|-------------|
+
 6. **Action Triggers:**
-   - If blockers exist → Send Slack notification
-   - If status is RED → Create escalation task
-   - Always → Generate status report
 
-### Q&A System
+   - Blockers exist → Send Slack notification| `POST` | `/events/ingest` | Ingest single event |You should see:
 
-The natural language Q&A uses pattern matching to understand questions:
-- Keywords: "risk", "blocker", "status"
-- Context: Recent events + current state
-- Output: Multi-sentence answer + reasoning steps
+   - Status is RED → Create escalation task
+
+   - Always → Generate status report| `POST` | `/events/ingest/batch` | Ingest multiple events |```
+
+
+
+### Q&A System| `GET` | `/events/list?limit=50` | List recent events |🚀 FlowSentinel Backend Started
+
+
+
+Natural language processing (simulated) that understands questions like:| `POST` | `/simulation/run` | Load 8 demo events |📊 Dashboard: http://localhost:8000/docs
+
+- "Is the project at risk?"
+
+- "What are the current blockers?"🧠 Watsonx.ai Integration: Ready
+
+- "What is the project status?"
+
+### Agent Operations🤖 Orchestrate Bridge: Ready
+
+Returns detailed answers with reasoning steps.
+
+```
 
 ---
+
+| Method | Endpoint | Description |
+
+## 📚 Documentation
+
+|--------|----------|-------------|**Access Points:**
+
+- **[DOCKER.md](docs/DOCKER.md)** — Complete Docker deployment guide
+
+- **[CI-CD.md](docs/CI-CD.md)** — GitHub Actions and CI/CD setup| `POST` | `/agent/run` | Run AI analysis + trigger actions |- 🌐 API Server: http://localhost:8000
+
+- **[.env.example](.env.example)** — Environment variables reference
+
+| `GET` | `/state/latest` | Get current project state |- 📚 Interactive Docs: http://localhost:8000/docs
+
+---
+
+| `GET` | `/actions/list?limit=50` | List executed actions |- 📖 ReDoc: http://localhost:8000/redoc
+
+## 🛠️ Tech Stack
+
+
+
+| Component | Technology | Purpose |
+
+|-----------|-----------|---------|### Q&A### Testing Endpoints
+
+| Framework | FastAPI 0.104.1 | High-performance async web framework |
+
+| Server | Uvicorn | ASGI server with hot reload |
+
+| Validation | Pydantic v2 | Type-safe data models |
+
+| AI Engine | IBM watsonx.ai | Event analysis (simulated for demo) || Method | Endpoint | Description |**Option 1: Using the demo script (Recommended)**
+
+| Automation | IBM watsonx Orchestrate | Action execution (simulated for demo) |
+
+| HTTP Client | httpx + requests | Async/sync HTTP requests ||--------|----------|-------------|```bash
+
+| Storage | In-Memory (MVP) | Ready for PostgreSQL migration |
+
+| `POST` | `/qa/ask` | Ask natural language questions |# In a new terminal (keep server running)
+
+---
+
+python demo.py
+
+## 🎯 Use Cases
+
+**Full interactive documentation:** Visit `/docs` when server is running```
+
+- **Software Development Teams** — Monitor sprint progress, detect blockers
+
+- **Project Management** — Track deadlines, identify risks
+
+- **DevOps Teams** — Monitor deployments, catch failures
+
+- **Customer Support** — Track ticket resolution, identify bottlenecks---**Option 2: Using the comprehensive test suite**
+
+- **Any Team Using Multiple Tools** — Centralize and analyze workflow data
+
+```bash
+
+---
+
+## 📁 Project Structurepython test_api.py
 
 ## 🔮 Future Enhancements
 
+```
+
 ### Near Term
-- [ ] PostgreSQL database integration
+
+- [ ] PostgreSQL database integration```
+
 - [ ] WebSocket support for real-time updates
-- [ ] User authentication & authorization
+
+- [ ] User authentication & authorizationflowsentinel/**Option 3: Manual curl commands**
+
 - [ ] Multi-project/tenant support
 
+├── src/                          # Source code```bash
+
 ### Medium Term
-- [ ] Real IBM watsonx.ai API integration
+
+- [ ] Real IBM watsonx.ai API integration│   └── main.py                   # Main FastAPI application (933 lines)# Load simulation data
+
 - [ ] Real IBM watsonx Orchestrate integration
-- [ ] Advanced analytics dashboard
-- [ ] Custom action workflow builder
+
+- [ ] Frontend dashboard (React/Vue)├── tests/                        # Test suitecurl -X POST http://localhost:8000/simulation/run
+
+- [ ] Advanced analytics
+
+│   ├── test_api.py              # Comprehensive API tests
 
 ### Long Term
-- [ ] Machine learning for predictive risk analysis
-- [ ] Sentiment analysis on team communications
-- [ ] Auto-generated status reports (PDF/email)
-- [ ] Mobile app for notifications
-- [ ] Integration with MS Teams, Discord, etc.
+
+- [ ] Machine learning for predictive analysis│   └── demo.py                  # Interactive demonstration# Run agent analysis
+
+- [ ] Sentiment analysis on communications
+
+- [ ] Mobile app for notifications├── scripts/                      # Automation scriptscurl -X POST http://localhost:8000/agent/run
+
+- [ ] Integration with MS Teams, Discord
+
+│   ├── setup.sh                 # Initial project setup
 
 ---
 
-## � Data Models
+│   ├── start.sh                 # Quick server start# Check project status
+
+## 🤝 Contributing
+
+│   ├── git-setup.sh             # Git initializationcurl http://localhost:8000/state/latest
+
+Contributions are welcome! Here's how:
+
+│   └── quick-push.sh            # GitHub push helper
+
+1. Fork the repository
+
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)├── docs/                         # Documentation# Ask a question
+
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+
+4. Push to the branch (`git push origin feature/amazing-feature`)│   ├── DOCKER.md                # Docker deployment guidecurl -X POST http://localhost:8000/qa/ask \
+
+5. Open a Pull Request
+
+│   └── CI-CD.md                 # Continuous integration guide  -H "Content-Type: application/json" \
+
+---
+
+├── .github/workflows/            # CI/CD pipelines  -d '{"question": "Is the project at risk?"}'
+
+## 📄 License
+
+│   └── test.yml                 # GitHub Actions workflow```
+
+MIT License - See [LICENSE](LICENSE) for details
+
+├── requirements.txt              # Production dependencies
+
+---
+
+├── requirements-dev.txt          # Development tools---
+
+## 🙏 Acknowledgments
+
+├── Dockerfile                    # Multi-stage Docker build
+
+- **IBM watsonx.ai** — For inspiration on agentic AI systems
+
+- **IBM watsonx Orchestrate** — For digital labor automation concepts├── docker-compose.yml            # Container orchestration## 📡 API Endpoints
+
+- **FastAPI** — For making Python APIs a joy to build
+
+- **The Open Source Community** — For amazing tools and libraries├── .env.example                  # Environment variable template
+
+
+
+---└── README.md                     # This file### Health & Info
+
+
+
+## 📞 Support``````
+
+
+
+- 🐛 **Issues:** [GitHub Issues](https://github.com/Nabilhassan12345/flowsentinel/issues)GET  /           # API information
+
+- 📚 **Docs:** Visit `/docs` endpoint when running
+
+- 💬 **Questions:** Open a discussion or issue---GET  /health     # Health check with metrics
+
+
+
+---```
+
+
+
+**Built with ❤️ using FastAPI, IBM watsonx.ai, and IBM watsonx Orchestrate**## 🐳 Docker Deployment
+
+
+
+*Last updated: November 22, 2025*### Event Management
+
+
+### Quick Start with Docker```
+
+POST /events/ingest        # Ingest single event
+
+```bashPOST /events/ingest/batch  # Ingest multiple events
+
+# Build and run with docker-composeGET  /events/list          # List recent events (supports ?limit=N)
+
+docker-compose up --buildPOST /simulation/run       # Load 8 demo events
+
+```
+
+# Or use standalone Docker
+
+docker build -t flowsentinel .### Agent Operations
+
+docker run -p 8000:8000 --env-file .env flowsentinel```
+
+```POST /agent/run      # Run AI analysis + trigger actions
+
+GET  /state/latest   # Get current project state
+
+### Production DeploymentGET  /actions/list   # List executed actions (supports ?limit=N)
+
+```
+
+See [docs/DOCKER.md](docs/DOCKER.md) for:
+
+- Multi-stage build optimization### Q&A
+
+- Resource limits and health checks```
+
+- CI/CD integration with DockerPOST /qa/ask         # Ask natural language questions
+
+- Kubernetes deployment examples```
+
+
+
+---**Full API Documentation:** Visit http://localhost:8000/docs when server is running
+
+
+
+## ⚙️ Configuration---
+
+
+
+### Environment Variables## 🔐 Environment Variables
+
+
+
+Key variables in `.env`:Copy `.env.example` to `.env` and configure:
+
+
+
+```bash### Required for Production
+
+# Slack Integration (EASIEST - Start here!)```bash
+
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL# IBM watsonx.ai (for real AI analysis)
+
+WATSONX_API_KEY=your_api_key_here
+
+# IBM watsonx.ai (For production AI analysis)WATSONX_PROJECT_ID=your_project_id
+
+WATSONX_API_KEY=your_api_keyWATSONX_URL=https://us-south.ml.cloud.ibm.com
+
+WATSONX_PROJECT_ID=your_project_id
+
+WATSONX_URL=https://us-south.ml.cloud.ibm.com# IBM watsonx Orchestrate (for real automation)
+
+ORCHESTRATE_API_KEY=your_api_key_here
+
+# IBM watsonx Orchestrate (For real automation)ORCHESTRATE_INSTANCE_ID=your_instance_id
+
+ORCHESTRATE_API_KEY=your_api_keyORCHESTRATE_URL=https://your-instance.watsonx-orchestrate.ibm.com
+
+ORCHESTRATE_INSTANCE_ID=your_instance_id```
+
+
+
+# Application Settings### Optional (Enhances Features)
+
+APP_PORT=8000```bash
+
+LOG_LEVEL=INFO# Slack Integration (enables real notifications)
+
+```SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+
+
+
+**For MVP/Demo:** No environment variables required! System works with simulation mode.# GitHub Integration (for future features)
+
+GITHUB_TOKEN=ghp_your_token_here
+
+**For Production:** See `.env.example` for complete configuration with setup instructions.GITHUB_REPO_OWNER=your-username
+
+GITHUB_REPO_NAME=your-repo
+
+---
+
+# Application Settings
+
+## 🧪 TestingAPP_PORT=8000
+
+LOG_LEVEL=INFO
+
+### Run Tests```
+
+
+
+```bash**Note:** For MVP/demo, NO environment variables are required! System works with simulation mode.
+
+# Full test suite with colored output
+
+python tests/test_api.py---
+
+
+
+# Interactive demo (shows all features)## 📁 Project Structure
+
+python tests/demo.py
+
+```
+
+# With Dockerflowsentinel/
+
+docker-compose run flowsentinel-backend python tests/test_api.py├── main.py              # Main FastAPI application (650+ lines)
+
+```│   ├── Database         # In-memory storage class
+
+│   ├── WatsonxAgent     # AI analysis engine
+
+### Continuous Integration│   ├── OrchestrateBridge # Action execution
+
+│   └── API Endpoints    # 11 REST endpoints
+
+GitHub Actions automatically runs on every push:├── demo.py              # Interactive demo script
+
+- Python linting (flake8)├── test_api.py          # Comprehensive test suite
+
+- Code formatting check (black)├── requirements.txt     # Python dependencies
+
+- API endpoint tests├── .env.example         # Environment variable template
+
+- Health check validation├── .gitignore           # Git ignore rules
+
+├── setup.sh             # Automated setup script
+
+See [docs/CI-CD.md](docs/CI-CD.md) for CI/CD setup and best practices.└── README.md            # This file
+
+```
+
+---
+
+### Key Components
+
+## 🎯 How It Works
+
+**`Database` Class**
+
+### Intelligent Analysis Algorithm- In-memory storage for events, state, actions
+
+- Easy to swap for PostgreSQL later
+
+1. **Event Collection** — Gather last 20 events from database
+
+2. **Blocker Detection** — Scan Slack messages for keywords:**`WatsonxAgent` Class**
+
+   - "blocked", "waiting", "stuck", "can't proceed", "need", "missing"- Analyzes events to detect blockers/risks
+
+3. **Risk Identification** — Find Jira deadline changes and delayed tasks- Calculates project health status
+
+4. **Completion Tracking** — Identify merged PRs and completed Jira tasks- Answers natural language questions
+
+5. **Status Calculation:**
+
+   - 🔴 **RED**: 2+ blockers OR 2+ risks**`OrchestrateBridge` Class**
+
+   - 🟡 **YELLOW**: 1+ blockers OR 1+ risks- Executes automated skills
+
+   - 🟢 **GREEN**: No blockers or risks- Real Slack webhook integration
+
+6. **Action Triggers:**- Simulated task creation & reports
+
+   - If blockers exist → Send Slack notification
+
+   - If status is RED → Create escalation task---
+
+   - Always → Generate status report
+
+## 🎮 Demo Instructions
+
+### Natural Language Q&A
+
+### Full Demo Sequence
+
+Uses pattern matching and context analysis:
+
+- Understands questions like "Is the project at risk?", "What are the blockers?", "What's the status?"1. **Start the server:**
+
+- Returns multi-sentence answers with reasoning steps   ```bash
+
+- Context-aware based on current project state and recent events   python main.py
+
+   ```
+
+---
+
+2. **Run the demo script** (in a new terminal):
+
+## 💡 Example Usage   ```bash
+
+   python demo.py
+
+### 1. Load Simulation Data   ```
+
+
+
+```bash3. **What you'll see:**
+
+curl -X POST http://localhost:8000/simulation/run   - ✅ Health check
+
+```   - 📥 8 events loaded (Slack messages, Jira updates, GitHub PRs)
+
+   - 🤖 Agent analysis detecting 1 blocker + 2 risks
+
+Creates 8 realistic events representing a typical workday with blockers and risks.   - 🚦 Status: YELLOW (warning level)
+
+   - 📬 Slack notification sent (if webhook configured)
+
+### 2. Run AI Analysis   - 📋 Escalation task created
+
+   - 💬 Q&A with 3 sample questions
+
+```bash   - 📊 Summary of all actions taken
+
+curl -X POST http://localhost:8000/agent/run
+
+```### Understanding the Simulation
+
+
+
+Analyzes events, detects issues, triggers automated actions.The demo creates a realistic scenario:
+
+- **Blocker:** "Backend is blocked waiting on design schema"
+
+### 3. Check Project Status- **Risk 1:** Landing Page Schema delayed
+
+- **Risk 2:** API Integration deadline changed
+
+```bash- **Result:** Project status = YELLOW (1 blocker + 2 risks)
+
+curl http://localhost:8000/state/latest
+
+```---
+
+
+
+Returns:## � Development Tips
+
+```json
+
+{### Running in Development Mode
+
+  "status": "YELLOW",
+
+  "blockers": [```bash
+
+    {# Auto-reload on file changes (default in main.py)
+
+      "description": "Backend is blocked waiting on design schema",python main.py
+
+      "source": "Slack",
+
+      "timestamp": "2024-03-20T14:10:00Z"# Manual reload with uvicorn
+
+    }uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+  ],```
+
+  "risks": [...],
+
+  "completed_today": [...],### Testing Individual Endpoints
+
+  "next_deadline": "2024-03-25T17:00:00Z"
+
+}```bash
+
+```# Test health
+
+curl http://localhost:8000/health
+
+### 4. Ask Questions
+
+# Test with pretty output
+
+```bashcurl http://localhost:8000/state/latest | python -m json.tool
+
+curl -X POST http://localhost:8000/qa/ask \```
+
+  -H "Content-Type: application/json" \
+
+  -d '{"question": "Is the project at risk?"}'### Adding New Event Sources
+
+```
+
+1. Add event type to `Event.source` enum in `main.py`
+
+---2. Update `WatsonxAgent.analyze_state()` to process new events
+
+3. Add sample events to `/simulation/run` endpoint
+
+## 🛠️ Development
+
+### Customizing Analysis Logic
+
+### Local Development
+
+Edit `WatsonxAgent.analyze_state()` in `main.py`:
+
+```bash- Modify blocker keywords (line ~250)
+
+# Install dev dependencies- Adjust risk detection logic (line ~260)
+
+pip install -r requirements-dev.txt- Change status calculation thresholds (line ~295)
+
+
+
+# Run with hot reload (auto-restarts on code changes)---
+
+python src/main.py
+
+## 🔧 Troubleshooting
+
+# Format code
+
+black src/ tests/### Server Won't Start
+
+
+
+# Lint code**Problem:** `Address already in use`
+
+flake8 src/ tests/```bash
+
+# Find process using port 8000
+
+# Run pre-commit checkslsof -i :8000
+
+pre-commit run --all-files
+
+```# Kill the process
+
+kill -9 <PID>
+
+### Adding Features```
+
+
+
+1. Create feature branch: `git checkout -b feature/your-feature`**Problem:** `ModuleNotFoundError`
+
+2. Make changes in `src/main.py````bash
+
+3. Add tests in `tests/test_api.py`# Ensure virtual environment is activated
+
+4. Run tests: `python tests/test_api.py`source venv/bin/activate
+
+5. Commit and push: `git push origin feature/your-feature`
+
+6. Create Pull Request on GitHub# Reinstall dependencies
+
+pip install -r requirements.txt
+
+---```
+
+
+
+## 🔧 Troubleshooting### Agent Returns 400 Error
+
+
+
+### Server Won't Start**Problem:** `No events to analyze`
+
+```bash
+
+```bash# Solution: Load simulation data first
+
+# Check if port 8000 is in usecurl -X POST http://localhost:8000/simulation/run
+
+lsof -i :8000curl -X POST http://localhost:8000/agent/run
+
+```
+
+# Kill existing process
+
+kill -9 <PID>### Slack Notifications Not Working
+
+
+
+# Or use different port**Problem:** No webhook configured
+
+APP_PORT=8001 python src/main.py```bash
+
+```# Check console for message like:
+
+# "ℹ️ Slack webhook not configured"
+
+### Tests Fail with "Connection Error"
+
+# Solution: Add webhook to .env
+
+Server must be running before tests:echo "SLACK_WEBHOOK_URL=https://hooks.slack.com/..." >> .env
+
+
+
+**Terminal 1:**# Restart server
+
+```bash```
+
+python src/main.py
+
+```### Tests Failing
+
+
+
+**Terminal 2:****Problem:** Server not running
+
+```bash```bash
+
+python tests/test_api.py# Start server first
+
+```python main.py
+
+
+
+### Import Errors# Then run tests in new terminal
+
+python test_api.py
+
+```bash```
+
+# Ensure virtual environment is activated
+
+source venv/bin/activate---
+
+
+
+# Reinstall dependencies## 🎓 How It Works
+
+pip install -r requirements.txt
+
+```### Analysis Algorithm
+
+
+
+### Docker Build Fails1. **Event Collection:** Gather last 20 events from database
+
+2. **Blocker Detection:** Scan Slack messages for keywords:
+
+```bash   - "blocked", "waiting", "stuck", "can't proceed", "need", "missing"
+
+# Clean Docker cache3. **Risk Identification:** Find Jira deadline changes and delays
+
+docker system prune -a4. **Completion Tracking:** Identify merged PRs and completed tasks
+
+5. **Status Calculation:**
+
+# Rebuild without cache   - 🔴 **RED:** 2+ blockers OR 2+ risks
+
+docker-compose build --no-cache   - 🟡 **YELLOW:** 1+ blockers OR 1+ risks
+
+```   - 🟢 **GREEN:** No blockers or risks
+
+6. **Action Triggers:**
+
+---   - If blockers exist → Send Slack notification
+
+   - If status is RED → Create escalation task
+
+## 📊 Key Features   - Always → Generate status report
+
+
+
+### ✅ Production-Ready### Q&A System
+
+
+
+- **Type Safety** — Full Pydantic v2 validationThe natural language Q&A uses pattern matching to understand questions:
+
+- **Error Handling** — Comprehensive try-catch with meaningful messages- Keywords: "risk", "blocker", "status"
+
+- **Health Checks** — Built-in monitoring endpoint- Context: Recent events + current state
+
+- **Auto Documentation** — Interactive Swagger UI at `/docs`- Output: Multi-sentence answer + reasoning steps
+
+- **CORS Enabled** — Ready for frontend integration
+
+- **Hot Reload** — Instant updates during development---
+
+
+
+### ✅ Enterprise-Grade## 🔮 Future Enhancements
+
+
+
+- **Separation of Concerns** — Database, Agent, Bridge, API layers### Near Term
+
+- **Containerization** — Docker and docker-compose included- [ ] PostgreSQL database integration
+
+- **CI/CD Pipeline** — Automated testing on every commit- [ ] WebSocket support for real-time updates
+
+- **Logging** — Detailed console output for debugging- [ ] User authentication & authorization
+
+- **Scalable Architecture** — Ready for PostgreSQL, WebSocket, multi-tenant- [ ] Multi-project/tenant support
+
+
+
+### ✅ Intelligent### Medium Term
+
+- [ ] Real IBM watsonx.ai API integration
+
+- **Keyword Detection** — Scans for blockers and risks- [ ] Real IBM watsonx Orchestrate integration
+
+- **Risk Calculation** — Identifies deadline changes- [ ] Advanced analytics dashboard
+
+- **Status Algorithm** — Smart health determination- [ ] Custom action workflow builder
+
+- **Context-Aware Q&A** — Natural language understanding
+
+- **Reasoning Steps** — Transparent AI decision-making### Long Term
+
+- [ ] Machine learning for predictive risk analysis
+
+---- [ ] Sentiment analysis on team communications
+
+- [ ] Auto-generated status reports (PDF/email)
+
+## 🔮 Future Enhancements- [ ] Mobile app for notifications
+
+- [ ] Integration with MS Teams, Discord, etc.
+
+### Near Term
+
+- [ ] Real IBM watsonx.ai API integration---
+
+- [ ] PostgreSQL database (swap from in-memory)
+
+- [ ] WebSocket support for real-time updates## � Data Models
+
+- [ ] Frontend dashboard (React/Vue)
 
 ### Event Schema
-```python
-{
-  "id": "evt_001",
-  "source": "slack" | "jira" | "github" | "calendar",
-  "type": "message" | "task_status_changed" | "pr_opened" | ...,
+
+### Medium Term```python
+
+- [ ] Multi-project/tenant support{
+
+- [ ] Advanced analytics dashboard  "id": "evt_001",
+
+- [ ] Custom action workflow builder  "source": "slack" | "jira" | "github" | "calendar",
+
+- [ ] Real Jira/GitHub API integration  "type": "message" | "task_status_changed" | "pr_opened" | ...,
+
   "timestamp": "2024-03-20T14:10:00Z",
-  "data": { /* flexible payload */ },
-  "processed": false
-}
-```
+
+### Long Term  "data": { /* flexible payload */ },
+
+- [ ] Machine learning for predictive risk analysis  "processed": false
+
+- [ ] Sentiment analysis on team communications}
+
+- [ ] Auto-generated PDF/email reports```
+
+- [ ] Mobile app for notifications
 
 ### ProjectState Schema
-```python
+
+---```python
+
 {
-  "status": "GREEN" | "YELLOW" | "RED",
+
+## 📈 Project Stats  "status": "GREEN" | "YELLOW" | "RED",
+
   "blockers": [{"description": "...", "source": "...", "timestamp": "..."}],
-  "risks": [{"description": "...", "impact": "...", "timestamp": "..."}],
-  "completed_today": [{"description": "...", "timestamp": "..."}],
-  "next_deadline": "2024-03-25T17:00:00Z",
-  "last_updated": "2024-03-20T15:00:00Z"
-}
-```
+
+- **Total Lines**: ~3,600+  "risks": [{"description": "...", "impact": "...", "timestamp": "..."}],
+
+- **Main Application**: 933 lines (`src/main.py`)  "completed_today": [{"description": "...", "timestamp": "..."}],
+
+- **API Endpoints**: 11 fully documented  "next_deadline": "2024-03-25T17:00:00Z",
+
+- **Test Coverage**: 10+ test functions  "last_updated": "2024-03-20T15:00:00Z"
+
+- **Data Models**: 5 Pydantic models}
+
+- **Docker Ready**: Multi-stage build```
+
+- **CI/CD**: GitHub Actions pipeline
+
+---
 
 ---
 
 ## 📄 License
 
+## 🤝 Contributing
+
 MIT License
+
+Contributions welcome! To contribute:
 
 Copyright (c) 2024 FlowSentinel
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+1. Fork the repository
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+2. Create feature branch (`git checkout -b feature/amazing-feature`)Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+
+4. Push to branch (`git push origin feature/amazing-feature`)The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+5. Open Pull Request
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+See [GitHub Issues](https://github.com/Nabilhassan12345/flowsentinel/issues) for ideas.
+
+---
 
 ---
 
 ## 🤝 Contributing
 
+## 📄 License
+
 This project was built for a hackathon but welcomes contributions!
 
-**To contribute:**
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+MIT License — See [LICENSE](LICENSE) file for details.
 
----
+**To contribute:**
+
+---1. Fork the repository
+
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+
+## 🙏 Acknowledgments3. Commit your changes (`git commit -m 'Add amazing feature'`)
+
+4. Push to the branch (`git push origin feature/amazing-feature`)
+
+- **IBM watsonx.ai** — For agentic AI inspiration5. Open a Pull Request
+
+- **IBM watsonx Orchestrate** — For digital labor automation concepts
+
+- **FastAPI** — For making Python APIs a joy to build---
+
+- **Open Source Community** — For amazing tools and libraries
 
 ## � Acknowledgments
 
+---
+
 - **IBM watsonx.ai** - For inspiration on agentic AI systems
-- **IBM watsonx Orchestrate** - For digital labor automation concepts
+
+## 📞 Support- **IBM watsonx Orchestrate** - For digital labor automation concepts
+
 - **FastAPI** - For making Python APIs a joy to build
-- **The Open Source Community** - For amazing tools and libraries
 
----
+- 📧 **Issues**: [GitHub Issues](https://github.com/Nabilhassan12345/flowsentinel/issues)- **The Open Source Community** - For amazing tools and libraries
 
-## 📞 Support
+- 💬 **Questions**: Check `/docs` endpoint when server is running
 
-- 📧 Report issues on GitHub Issues
+- 🌟 **Like it?**: Star this repo!---
+
+
+
+---## 📞 Support
+
+
+
+## 🎓 Learn More- 📧 Report issues on GitHub Issues
+
 - 💬 Questions? Check out the `/docs` endpoint when running
-- 🌟 Star this repo if you find it helpful!
 
----
+- **FastAPI Docs**: https://fastapi.tiangolo.com/- 🌟 Star this repo if you find it helpful!
+
+- **Pydantic**: https://docs.pydantic.dev/
+
+- **Docker**: https://docs.docker.com/---
+
+- **IBM watsonx**: https://www.ibm.com/watsonx
 
 ## 📦 **Complete Project Contents**
 
+---
+
 This repository includes everything needed for a production-ready agentic AI system:
 
+**Built with ❤️ using FastAPI, Python 3.11, Docker, and IBM watsonx**
+
 ### **Core Application Files**
-- **`main.py`** (933 lines) - Complete FastAPI backend with:
+
+*Last updated: November 22, 2025*- **`main.py`** (933 lines) - Complete FastAPI backend with:
+
   - Database class for in-memory storage
   - WatsonxAgent class for AI analysis
   - OrchestrateBridge class for automated actions
