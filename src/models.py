@@ -299,7 +299,7 @@ class AnalyticsDB(Base):
     # Metric data
     metric_name = Column(String(100), nullable=False, index=True)
     metric_value = Column(Float, nullable=False)
-    metadata = Column(JSON, nullable=True, default=dict)  # Additional context
+    metric_metadata = Column(JSON, nullable=True, default=dict)  # Additional context
 
     # Timestamps
     timestamp = Column(DateTime, nullable=False, default=utc_now, index=True)

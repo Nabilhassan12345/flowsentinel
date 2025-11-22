@@ -33,14 +33,22 @@ DATABASE_URL = os.getenv(
 # Create engine
 # For production PostgreSQL, use:
 # postgresql://user:password@localhost:5432/flowsentinel
-engine = create_engine(
-    DATABASE_URL,
-    echo=os.getenv("DEBUG", "False").lower() == "true",  # Log SQL in debug mode
-    poolclass=NullPool if "sqlite" in DATABASE_URL else None,  # SQLite doesn't need pooling
-    pool_pre_ping=True,  # Verify connections before using
-    pool_size=10,  # Max connections (ignored for SQLite)
-    max_overflow=20,  # Max overflow connections (ignored for SQLite)
-)
+if "sqlite" in DATABASE_URL:
+    # SQLite configuration (development)
+    engine = create_engine(
+        DATABASE_URL,
+        echo=os.getenv("DEBUG", "False").lower() == "true",
+        poolclass=NullPool,  # SQLite doesn't need connection pooling
+    )
+else:
+    # PostgreSQL/MySQL configuration (production)
+    engine = create_engine(
+        DATABASE_URL,
+        echo=os.getenv("DEBUG", "False").lower() == "true",
+        pool_pre_ping=True,  # Verify connections before using
+        pool_size=10,  # Max connections
+        max_overflow=20,  # Max overflow connections
+    )
 
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -119,7 +127,8 @@ def check_db_connection() -> bool:
     """
     try:
         with engine.connect() as connection:
-            connection.execute("SELECT 1")
+            from sqlalchemy import text
+            connection.execute(text("SELECT 1"))
         return True
     except Exception as e:
         print(f"❌ Database connection failed: {e}")
