@@ -27,6 +27,18 @@ python-dotenv==1.0.0
 # Provides powerful date parsing and manipulation capabilities
 python-dateutil==2.8.2
 
+# SQLAlchemy - SQL toolkit and ORM for Python
+# Provides database abstraction layer for PostgreSQL, MySQL, SQLite
+sqlalchemy==2.0.23
+
+# Psycopg2 - PostgreSQL adapter for Python (binary version for easier installation)
+# Required for PostgreSQL database connections
+psycopg2-binary==2.9.9
+
+# Alembic - Database migration tool for SQLAlchemy
+# Manages database schema changes over time
+alembic==1.12.1
+
 # ============================================================================
 # Development Dependencies (Optional - for linting and testing)
 # ============================================================================
