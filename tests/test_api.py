@@ -7,10 +7,10 @@ Tests include health checks, event ingestion, agent execution,
 state retrieval, actions, and Q&A functionality.
 
 Usage:
-    python test_api.py
+    python tests/test_api.py
 
 Requirements:
-    - Server must be running: python main.py
+    - Server must be running: python src/main.py (or ./scripts/start.sh)
     - requests library: pip install requests
 """
 

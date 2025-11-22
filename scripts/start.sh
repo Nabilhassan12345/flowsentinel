@@ -48,4 +48,5 @@ echo "Press Ctrl+C to stop the server"
 echo ""
 
 # Start the server
-python main.py
+cd "$(dirname "$0")/.."
+python src/main.py
