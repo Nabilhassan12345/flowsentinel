@@ -8,11 +8,57 @@
 #   Production:                     docker-compose -f docker-compose.yml up
 #   Build from scratch:             docker-compose build --no-cache
 #   Stop services:                  docker-compose down
+#   Database only:                  docker-compose up postgres
 # ============================================================================
 
 version: '3.8'
 
 services:
+  # --------------------------------------------------------------------------
+  # PostgreSQL Database Service
+  # --------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: flowsentinel-db
+    
+    # PostgreSQL configuration
+    environment:
+      POSTGRES_USER: flowsentinel
+      POSTGRES_PASSWORD: flowsentinel123
+      POSTGRES_DB: flowsentinel
+      PGDATA: /var/lib/postgresql/data/pgdata
+    
+    # Port mapping (host:container)
+    ports:
+      - "5432:5432"
+    
+    # Persistent data storage
+    volumes:
+      - flowsentinel-db-data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flowsentinel -d flowsentinel"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Network
+    networks:
+      - flowsentinel-network
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   # --------------------------------------------------------------------------
   # FlowSentinel Backend Service
   # --------------------------------------------------------------------------
@@ -35,14 +81,13 @@ services:
       - .env
     
     # Option 2: Specify environment variables directly (uncomment if needed)
-    # environment:
-    #   - APP_HOST=0.0.0.0
-    #   - APP_PORT=8000
-    #   - APP_DEBUG=false
-    #   - LOG_LEVEL=INFO
-    #   - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
-    #   - WATSONX_API_KEY=${WATSONX_API_KEY}
-    #   - WATSONX_PROJECT_ID=${WATSONX_PROJECT_ID}
+    environment:
+      - DATABASE_URL=postgresql://flowsentinel:flowsentinel123@postgres:5432/flowsentinel
+    
+    # Depends on database
+    depends_on:
+      postgres:
+        condition: service_healthy
     
     # Volume mounts for development (hot reload)
     # Comment out for production deployment
@@ -92,8 +137,9 @@ networks:
     name: flowsentinel-network
 
 # --------------------------------------------------------------------------
-# Volumes (for future PostgreSQL or persistent storage)
+# Volumes (for persistent storage)
 # --------------------------------------------------------------------------
-# volumes:
-#   flowsentinel-data:
-#     name: flowsentinel-data
+volumes:
+  flowsentinel-db-data:
+    name: flowsentinel-db-data
+    driver: local

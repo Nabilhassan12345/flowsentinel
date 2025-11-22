@@ -270,9 +270,15 @@ class WebhookDB(Base):
         JSON, nullable=False, default=list
     )  # Event types to trigger on
     active = Column(Boolean, default=True, index=True)
+    description = Column(String(500), nullable=True)  # Optional webhook description
 
     # Multi-tenant support
     team_id = Column(String(36), nullable=True, index=True)
+
+    # Webhook stats
+    trigger_count = Column(Integer, default=0, nullable=False)  # How many times triggered
+    last_triggered = Column(DateTime, nullable=True)  # When last triggered
+    last_status = Column(String(20), nullable=True)  # Last trigger status (success/failed/error)
 
     # Audit fields
     created_at = Column(DateTime, default=utc_now, nullable=False)

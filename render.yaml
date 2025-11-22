@@ -1,0 +1,134 @@
+# ============================================================================
+# Render.com Deployment Configuration
+# ============================================================================
+# This file configures automatic deployment to Render.com
+# 
+# To deploy:
+#   1. Push this file to your GitHub repository
+#   2. Connect your repo to Render: https://dashboard.render.com/
+#   3. Render will automatically detect this file and set up services
+#   4. Set environment variables in Render dashboard
+#
+# Documentation: https://render.com/docs/blueprint-spec
+# ============================================================================
+
+services:
+  # --------------------------------------------------------------------------
+  # PostgreSQL Database
+  # --------------------------------------------------------------------------
+  - type: pserv
+    name: flowsentinel-db
+    env: docker
+    plan: free
+    region: oregon
+    databaseName: flowsentinel
+    databaseUser: flowsentinel
+    # Note: Render auto-generates a secure password
+    # Access via DATABASE_URL environment variable
+
+  # --------------------------------------------------------------------------
+  # FlowSentinel Backend API
+  # --------------------------------------------------------------------------
+  - type: web
+    name: flowsentinel-api
+    env: python
+    region: oregon
+    plan: free  # Free tier: 512MB RAM, sleeps after 15min inactivity
+    
+    # Build configuration
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    
+    # Start command
+    startCommand: |
+      cd src && uvicorn main:app --host 0.0.0.0 --port $PORT
+    
+    # Health check endpoint
+    healthCheckPath: /health
+    
+    # Auto-deploy on git push
+    autoDeploy: true
+    
+    # Environment variables
+    envVars:
+      # Python configuration
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      
+      # Environment mode
+      - key: ENVIRONMENT
+        value: production
+      
+      # Database connection (auto-populated from database service)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: flowsentinel-db
+          property: connectionString
+      
+      # Application settings
+      - key: APP_HOST
+        value: "0.0.0.0"
+      
+      - key: LOG_LEVEL
+        value: INFO
+      
+      # CORS configuration (update with your frontend URL)
+      - key: CORS_ORIGINS
+        value: "*"
+      
+      # Security settings
+      - key: SECRET_KEY
+        generateValue: true  # Auto-generate secure key
+      
+      # Optional: Slack integration (set in Render dashboard)
+      - key: SLACK_WEBHOOK_URL
+        sync: false  # Set manually in dashboard
+      
+      # Optional: watsonx.ai integration (set in Render dashboard)
+      - key: WATSONX_API_KEY
+        sync: false
+      
+      - key: WATSONX_PROJECT_ID
+        sync: false
+      
+      - key: WATSONX_URL
+        value: https://us-south.ml.cloud.ibm.com
+      
+      - key: WATSONX_MODEL_ID
+        value: ibm/granite-13b-chat-v2
+      
+      # Optional: watsonx Orchestrate integration (set in Render dashboard)
+      - key: ORCHESTRATE_API_KEY
+        sync: false
+      
+      - key: ORCHESTRATE_INSTANCE_ID
+        sync: false
+      
+      - key: ORCHESTRATE_URL
+        sync: false
+
+# ============================================================================
+# Additional Notes
+# ============================================================================
+# 
+# Free Tier Limitations:
+#   - Web services sleep after 15 minutes of inactivity
+#   - 750 hours/month of runtime
+#   - 512MB RAM
+#   - PostgreSQL: 90 days data retention, 1GB storage
+#
+# To upgrade: Change plan to "starter" ($7/month) or "standard" ($25/month)
+#
+# Custom Domain:
+#   Add in Render dashboard: Settings > Custom Domain
+#
+# Monitoring:
+#   - Logs: Available in Render dashboard
+#   - Metrics: CPU, Memory, Request count
+#   - Alerts: Configure in dashboard
+#
+# Environment Variables:
+#   Set sensitive values (API keys) in Render dashboard, not in this file!
+#
+# ============================================================================

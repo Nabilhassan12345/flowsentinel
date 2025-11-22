@@ -19,13 +19,57 @@ from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 from dotenv import load_dotenv
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 import httpx
 
 # Load environment variables
 load_dotenv()
+
+# Import database and routers with fallback
+try:
+    from database import init_db, get_db, test_connection
+    from models import EventDB, ProjectStateDB, ActionDB
+    DATABASE_ENABLED = True
+except ImportError:
+    print("⚠️  Database not available - using in-memory storage")
+    DATABASE_ENABLED = False
+    
+    # Create a dummy dependency for type checking
+    def get_db():
+        """Dummy database dependency when database is not enabled."""
+        yield None
+
+try:
+    from analytics_endpoints import router as analytics_router
+    ANALYTICS_ENABLED = True
+except ImportError:
+    print("⚠️  Analytics endpoints not available")
+    ANALYTICS_ENABLED = False
+
+try:
+    from team_endpoints import router as team_router
+    TEAMS_ENABLED = True
+except ImportError:
+    print("⚠️  Team endpoints not available")
+    TEAMS_ENABLED = False
+
+try:
+    from webhook_endpoints import router as webhook_router, trigger_webhooks
+    WEBHOOKS_ENABLED = True
+except ImportError:
+    print("⚠️  Webhook endpoints not available")
+    WEBHOOKS_ENABLED = False
+    trigger_webhooks = None
+
+try:
+    from intelligence_endpoints import router as intelligence_router
+    INTELLIGENCE_ENABLED = True
+except ImportError:
+    print("⚠️  Intelligence endpoints not available")
+    INTELLIGENCE_ENABLED = False
 
 
 # ============================================================================
@@ -555,8 +599,8 @@ class OrchestrateBridge:
 
 app = FastAPI(
     title="FlowSentinel API",
-    version="1.0.0",
-    description="Agentic company brain for team workflow monitoring",
+    version="2.0.0",
+    description="Agentic Company Brain powered by IBM watsonx - Real-time monitoring, AI predictions, and automated actions",
 )
 
 # Add CORS middleware to allow frontend access
@@ -568,6 +612,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include routers for all features (routers already have their own prefixes)
+if ANALYTICS_ENABLED:
+    app.include_router(analytics_router, tags=["analytics"])
+    
+if TEAMS_ENABLED:
+    app.include_router(team_router, tags=["teams"])
+    
+if WEBHOOKS_ENABLED:
+    app.include_router(webhook_router, tags=["webhooks"])
+    
+if INTELLIGENCE_ENABLED:
+    app.include_router(intelligence_router, tags=["intelligence"])
+
 
 # ============================================================================
 # API ENDPOINTS
@@ -576,8 +633,42 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    """Root endpoint - API information."""
-    return {"service": "FlowSentinel API", "version": "1.0.0", "status": "operational"}
+    """Root endpoint - Complete API information."""
+    return {
+        "service": "FlowSentinel API",
+        "version": "2.0.0",
+        "description": "Agentic Company Brain powered by IBM watsonx",
+        "features": [
+            "Real-time event monitoring",
+            "IBM watsonx.ai analysis",
+            "Automated actions via Orchestrate",
+            "Advanced analytics" if ANALYTICS_ENABLED else None,
+            "Team management" if TEAMS_ENABLED else None,
+            "Webhook notifications" if WEBHOOKS_ENABLED else None,
+            "Predictive intelligence" if INTELLIGENCE_ENABLED else None,
+            "Risk scoring",
+        ],
+        "endpoints": {
+            "docs": "/docs",
+            "health": "/health",
+            "events": "/events/ingest",
+            "simulation": "/simulation/run",
+            "agent": "/agent/run",
+            "state": "/state/latest",
+            "qa": "/qa/ask",
+            "analytics": "/analytics/summary" if ANALYTICS_ENABLED else None,
+            "teams": "/teams" if TEAMS_ENABLED else None,
+            "webhooks": "/webhooks" if WEBHOOKS_ENABLED else None,
+            "intelligence": "/intelligence/predict-deadline-risk" if INTELLIGENCE_ENABLED else None,
+        },
+        "status": {
+            "database": "enabled" if DATABASE_ENABLED else "in-memory",
+            "analytics": "enabled" if ANALYTICS_ENABLED else "disabled",
+            "teams": "enabled" if TEAMS_ENABLED else "disabled",
+            "webhooks": "enabled" if WEBHOOKS_ENABLED else "disabled",
+            "intelligence": "enabled" if INTELLIGENCE_ENABLED else "disabled",
+        }
+    }
 
 
 @app.get("/health")
@@ -592,35 +683,134 @@ async def health_check():
 
 
 @app.post("/events/ingest")
-async def ingest_event(event: Event):
+async def ingest_event(
+    event: Event,
+    background_tasks: BackgroundTasks,
+    team_id: Optional[str] = None,
+    db_session: Session = Depends(get_db)
+):
     """
     Ingest a single event from any source.
 
     Args:
         event: Event object to ingest
+        background_tasks: FastAPI background tasks for webhook triggering
+        team_id: Optional team ID to associate with event
+        db_session: Database session for persistence
 
     Returns:
         Success status and event ID
     """
+    # Add to in-memory database
     db.add_event(event)
-    return {"status": "success", "event_id": event.id}
+    
+    # Add to SQL database if enabled
+    if DATABASE_ENABLED and db_session:
+        try:
+            db_event = EventDB(
+                id=event.id,
+                source=event.source,
+                type=event.type,
+                timestamp=datetime.fromisoformat(event.timestamp.replace('Z', '+00:00')),
+                data=event.data,
+                processed=event.processed,
+                team_id=team_id
+            )
+            db_session.add(db_event)
+            db_session.commit()
+        except Exception as e:
+            print(f"⚠️  Failed to save event to database: {e}")
+            db_session.rollback()
+    
+    # Trigger webhooks in background
+    if WEBHOOKS_ENABLED and trigger_webhooks and db_session:
+        payload = {
+            "event_type": "event.created",
+            "event_id": event.id,
+            "source": event.source,
+            "type": event.type,
+            "timestamp": event.timestamp,
+            "data": event.data,
+            "team_id": team_id
+        }
+        
+        background_tasks.add_task(trigger_webhooks, "event.created", payload, db_session)
+    
+    return {
+        "status": "success",
+        "event_id": event.id,
+        "team_id": team_id,
+        "storage": "database" if DATABASE_ENABLED else "in-memory"
+    }
 
 
 @app.post("/events/ingest/batch")
-async def ingest_events_batch(events: List[Event]):
+async def ingest_events_batch(
+    events: List[Event],
+    background_tasks: BackgroundTasks,
+    team_id: Optional[str] = None,
+    db_session: Session = Depends(get_db)
+):
     """
     Ingest multiple events at once.
 
     Args:
         events: List of event objects to ingest
+        background_tasks: FastAPI background tasks for webhook triggering
+        team_id: Optional team ID to associate with events
+        db_session: Database session for persistence
 
     Returns:
         Success status and count of ingested events
     """
     for event in events:
+        # Add to in-memory database
         db.add_event(event)
+        
+        # Add to SQL database if enabled
+        if DATABASE_ENABLED and db_session:
+            try:
+                db_event = EventDB(
+                    id=event.id,
+                    source=event.source,
+                    type=event.type,
+                    timestamp=datetime.fromisoformat(event.timestamp.replace('Z', '+00:00')),
+                    data=event.data,
+                    processed=event.processed,
+                    team_id=team_id
+                )
+                db_session.add(db_event)
+            except Exception as e:
+                print(f"⚠️  Failed to save event {event.id} to database: {e}")
+        
+        # Trigger webhooks for each event in background
+        if WEBHOOKS_ENABLED and trigger_webhooks and db_session:
+            payload = {
+                "event_type": "event.created",
+                "event_id": event.id,
+                "source": event.source,
+                "type": event.type,
+                "timestamp": event.timestamp,
+                "data": event.data,
+                "team_id": team_id
+            }
+            
+            background_tasks.add_task(trigger_webhooks, "event.created", payload, db_session)
+    
+    # Commit all events at once if database enabled
+    if DATABASE_ENABLED and db_session:
+        try:
+            db_session.commit()
+        except Exception as e:
+            print(f"⚠️  Failed to commit batch events: {e}")
+            db_session.rollback()
 
-    return {"status": "success", "count": len(events)}
+    return {
+        "status": "success",
+        "count": len(events),
+        "team_id": team_id,
+        "storage": "database" if DATABASE_ENABLED else "in-memory"
+    }
 
 
 @app.get("/events/list")
@@ -639,7 +829,7 @@ async def list_events(limit: int = 50):
 
 
 @app.post("/simulation/run")
-async def run_simulation():
+async def run_simulation(db_session: Session = Depends(get_db)):
     """
     Load hardcoded simulation data for demo purposes.
 
@@ -719,19 +909,41 @@ async def run_simulation():
         ),
     ]
 
-    # Add all events to database
+    # Add events to in-memory database
     for event in simulation_events:
         db.add_event(event)
+
+    # Also add to SQL database if enabled
+    if DATABASE_ENABLED and db_session:
+        try:
+            for event in simulation_events:
+                db_event = EventDB(
+                    id=event.id,
+                    source=event.source,
+                    type=event.type,
+                    timestamp=datetime.fromisoformat(event.timestamp.replace('Z', '+00:00')),
+                    data=event.data,
+                    processed=event.processed
+                )
+                db_session.add(db_event)
+            db_session.commit()
+        except Exception as e:
+            print(f"⚠️  Failed to save to database: {e}")
+            db_session.rollback()
 
     return {
         "status": "success",
         "events_created": 8,
         "message": "Simulation loaded successfully",
+        "storage": "database" if DATABASE_ENABLED else "in-memory"
     }
 
 
 @app.post("/agent/run")
-async def run_agent():
+async def run_agent(
+    background_tasks: BackgroundTasks,
+    db_session: Session = Depends(get_db)
+):
     """
     Run the watsonx.ai agent to analyze events and trigger actions.
 
@@ -740,6 +952,10 @@ async def run_agent():
     2. Analyzes them using watsonx.ai
     3. Updates project state
     4. Triggers appropriate actions via Orchestrate
+
+    Args:
+        background_tasks: FastAPI background tasks for webhook triggering
+        db_session: Database session for webhook triggering
 
     Returns:
         Analysis results, updated state, and triggered actions
@@ -759,8 +975,39 @@ async def run_agent():
     # Analyze events with watsonx.ai
     state = await WatsonxAgent.analyze_state(events)
 
-    # Save updated state
+    # Save updated state to in-memory
     db.update_state(state)
+    
+    # Save to database if enabled
+    if DATABASE_ENABLED and db_session:
+        try:
+            db_state = ProjectStateDB(
+                status=state.status,
+                blockers=state.blockers,
+                risks=state.risks,
+                completed_today=state.completed_today,
+                next_deadline=state.next_deadline,
+                last_updated=datetime.fromisoformat(state.last_updated.replace('Z', '+00:00'))
+            )
+            db_session.add(db_state)
+            db_session.commit()
+        except Exception as e:
+            print(f"⚠️  Failed to save state to database: {e}")
+            db_session.rollback()
+    
+    # Trigger state.changed webhook
+    if WEBHOOKS_ENABLED and trigger_webhooks and db_session:
+        state_payload = {
+            "event_type": "state.changed",
+            "status": state.status,
+            "blockers_count": len(state.blockers),
+            "risks_count": len(state.risks),
+            "completed_today": len(state.completed_today),
+            "next_deadline": state.next_deadline,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        background_tasks.add_task(trigger_webhooks, "state.changed", state_payload, db_session)
 
     # Trigger actions based on state
     actions_triggered = []
@@ -778,6 +1025,35 @@ async def run_agent():
         )
         db.add_action(action)
         actions_triggered.append(action)
+        
+        # Save action to database if enabled
+        if DATABASE_ENABLED and db_session:
+            try:
+                db_action = ActionDB(
+                    id=action.id,
+                    type=action.type,
+                    status=action.status,
+                    payload=action.payload,
+                    timestamp=datetime.fromisoformat(action.timestamp.replace('Z', '+00:00'))
+                )
+                db_session.add(db_action)
+                db_session.commit()
+            except Exception as e:
+                print(f"⚠️  Failed to save action to database: {e}")
+                db_session.rollback()
+        
+        # Trigger action.taken webhook for blocker notification
+        if WEBHOOKS_ENABLED and trigger_webhooks and db_session:
+            action_payload = {
+                "event_type": "action.taken",
+                "action_type": action.type,
+                "action_id": action.id,
+                "status": action.status,
+                "payload": action.payload,
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            background_tasks.add_task(trigger_webhooks, "action.taken", action_payload, db_session)
 
     # If status is RED, escalate by creating a task
     if state.status == "RED":
@@ -896,28 +1172,55 @@ async def ask_question(request: QARequest):
 # STARTUP EVENT
 # ============================================================================
 
-
-def print_startup_info():
-    """
-    Print startup information.
-
-    Displays helpful information when the server starts, including
-    API documentation URL and system status.
-    """
-    print("\n" + "=" * 60)
-    print("🚀 FlowSentinel Backend Started")
-    print("=" * 60)
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database and print startup information."""
+    # Initialize database if enabled
+    if DATABASE_ENABLED:
+        try:
+            init_db()
+            print("🗄️  Database initialized")
+            
+            # Test database connection
+            test_connection()
+        except Exception as e:
+            print(f"⚠️  Database initialization failed: {e}")
+    
+    # Print feature list
+    print("\n" + "=" * 70)
+    print("🚀 FlowSentinel Backend v2.0 Started")
+    print("=" * 70)
     print("📊 Dashboard: http://localhost:8000/docs")
-    print("🧠 Watsonx.ai Integration: Ready")
-    print("🤖 Orchestrate Bridge: Ready")
-    print("💾 Database: In-Memory (MVP)")
-
+    print("🔗 API Root: http://localhost:8000/")
+    print()
+    print("🧠 Watsonx.ai: Ready")
+    print("🤖 Orchestrate: Ready")
+    print(f"💾 Database: {'SQLite' if DATABASE_ENABLED else 'In-Memory (MVP)'}")
+    print()
+    print("📈 Analytics: " + ("Enabled ✅" if ANALYTICS_ENABLED else "Disabled ⚠️"))
+    print("👥 Teams: " + ("Enabled ✅" if TEAMS_ENABLED else "Disabled ⚠️"))
+    print("🔔 Webhooks: " + ("Enabled ✅" if WEBHOOKS_ENABLED else "Disabled ⚠️"))
+    print("🔮 Predictions: " + ("Enabled ✅" if INTELLIGENCE_ENABLED else "Disabled ⚠️"))
+    print()
+    
     if os.getenv("SLACK_WEBHOOK_URL"):
         print("✅ Slack Webhook: Configured")
     else:
         print("⚠️  Slack Webhook: Not configured (set SLACK_WEBHOOK_URL)")
+    
+    print("=" * 70 + "\n")
 
-    print("=" * 60 + "\n")
+
+def print_startup_info():
+    """
+    Print startup information (deprecated - replaced by startup_event).
+
+    Displays helpful information when the server starts, including
+    API documentation URL and system status.
+    """
+    # This function is kept for backward compatibility
+    # but the actual startup logic is now in startup_event()
+    pass
 
 
 # ============================================================================
@@ -927,14 +1230,19 @@ def print_startup_info():
 if __name__ == "__main__":
     import uvicorn
 
-    # Print startup info
-    print_startup_info()
-
+    # Get port from environment variable (for cloud deployment)
+    # Render, Heroku, Railway all use PORT env variable
+    PORT = int(os.getenv("PORT", 8000))
+    
+    # Get environment mode
+    ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+    
     # Run the server with hot reload for development
+    # Startup info is printed by startup_event()
     uvicorn.run(
         "main:app",  # Import string required for reload
         host="0.0.0.0",
-        port=8000,
-        reload=True,
+        port=PORT,
+        reload=(ENVIRONMENT == "development"),  # Only reload in dev
         log_level="info"
     )
