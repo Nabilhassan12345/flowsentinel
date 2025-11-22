@@ -1,0 +1,100 @@
+# ============================================================================
+# FlowSentinel - Docker Compose Configuration
+# ============================================================================
+# This docker-compose file provides easy development and deployment setup.
+#
+# Usage:
+#   Development (with hot reload):  docker-compose up
+#   Production:                     docker-compose -f docker-compose.yml up
+#   Build from scratch:             docker-compose build --no-cache
+#   Stop services:                  docker-compose down
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # --------------------------------------------------------------------------
+  # FlowSentinel Backend Service
+  # --------------------------------------------------------------------------
+  flowsentinel-backend:
+    # Build configuration
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    # Container name
+    container_name: flowsentinel-api
+    
+    # Port mapping (host:container)
+    ports:
+      - "8000:8000"
+    
+    # Environment variables
+    # Option 1: Load from .env file (recommended)
+    env_file:
+      - .env
+    
+    # Option 2: Specify environment variables directly (uncomment if needed)
+    # environment:
+    #   - APP_HOST=0.0.0.0
+    #   - APP_PORT=8000
+    #   - APP_DEBUG=false
+    #   - LOG_LEVEL=INFO
+    #   - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+    #   - WATSONX_API_KEY=${WATSONX_API_KEY}
+    #   - WATSONX_PROJECT_ID=${WATSONX_PROJECT_ID}
+    
+    # Volume mounts for development (hot reload)
+    # Comment out for production deployment
+    volumes:
+      - ./main.py:/app/main.py
+      - ./demo.py:/app/demo.py
+      - ./test_api.py:/app/test_api.py
+      # Note: .env is NOT mounted for security (use env_file instead)
+    
+    # Health check configuration
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Resource limits (optional, adjust based on your needs)
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    
+    # Network configuration
+    networks:
+      - flowsentinel-network
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# --------------------------------------------------------------------------
+# Networks
+# --------------------------------------------------------------------------
+networks:
+  flowsentinel-network:
+    driver: bridge
+    name: flowsentinel-network
+
+# --------------------------------------------------------------------------
+# Volumes (for future PostgreSQL or persistent storage)
+# --------------------------------------------------------------------------
+# volumes:
+#   flowsentinel-data:
+#     name: flowsentinel-data

@@ -1,0 +1,37 @@
+# FastAPI - Modern, fast web framework for building APIs with Python 3.8+
+# Provides automatic API documentation, request/response validation, and async support
+fastapi==0.104.1
+
+# Uvicorn - Lightning-fast ASGI server implementation
+# [standard] includes extra dependencies: watchfiles, httptools, uvloop, websockets
+# Used for running the FastAPI application in production
+uvicorn[standard]==0.24.0
+
+# Pydantic v2 - Data validation using Python type annotations
+# Provides robust data models with automatic validation and serialization
+pydantic==2.5.0
+
+# HTTPX - Modern async HTTP client for Python
+# Used for making asynchronous HTTP requests (e.g., Slack webhook notifications)
+httpx==0.25.1
+
+# Requests - Simple, elegant HTTP library for synchronous requests
+# Backup HTTP client for sync operations and broader compatibility
+requests==2.31.0
+
+# Python-dotenv - Read key-value pairs from .env file and set them as environment variables
+# Used for managing configuration (API keys, webhook URLs) without hardcoding
+python-dotenv==1.0.0
+
+# Python-dateutil - Extensions to the standard datetime module
+# Provides powerful date parsing and manipulation capabilities
+python-dateutil==2.8.2
+
+# ============================================================================
+# Development Dependencies (Optional - for linting and testing)
+# ============================================================================
+# Uncomment these for local development and CI/CD pipelines
+
+# flake8==7.0.0          # Python linting tool
+# black==23.12.1         # Code formatter
+# pytest==7.4.3          # Testing framework
