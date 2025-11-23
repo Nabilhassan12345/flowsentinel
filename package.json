@@ -1,0 +1,22 @@
+{
+  "name": "flowsentinel",
+  "version": "2.0.0",
+  "description": "AI-Powered Project Intelligence System using IBM watsonx.ai",
+  "scripts": {
+    "build": "echo 'Static site - no build required'",
+    "dev": "python src/main.py"
+  },
+  "keywords": [
+    "IBM",
+    "watsonx",
+    "AI",
+    "FastAPI",
+    "project-management",
+    "monitoring"
+  ],
+  "authors": [
+    "Nabil Hassan",
+    "Abdulrahman"
+  ],
+  "license": "MIT"
+}

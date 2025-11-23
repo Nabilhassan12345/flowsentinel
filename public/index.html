@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowSentinel - AI-Powered Project Intelligence</title>
+    <meta name="description" content="An autonomous AI agent that monitors software development workflows in real-time using IBM watsonx.ai Granite models">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            color: #E2E8F0;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 4rem 0 2rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #60A5FA 0%, #8B5CF6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: #94A3B8;
+            margin-bottom: 2rem;
+        }
+
+        .badges {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #60A5FA;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid #10B981;
+            border-radius: 12px;
+            font-weight: 600;
+            color: #10B981;
+            margin: 2rem 0;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: #10B981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .hero-section {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 2rem 0;
+            animation: fadeIn 1s ease;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(96, 165, 250, 0.5);
+            box-shadow: 0 20px 40px rgba(96, 165, 250, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #F1F5F9;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            color: #94A3B8;
+            font-size: 0.95rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 3rem 0;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0066CC 0%, #0052A3 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 102, 204, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.1);
+            color: #E2E8F0;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(148, 163, 184, 0.2);
+            border-color: rgba(148, 163, 184, 0.5);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #60A5FA 0%, #8B5CF6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: #94A3B8;
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+        }
+
+        .tech-stack {
+            text-align: center;
+            margin: 4rem 0;
+        }
+
+        .tech-stack h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #F1F5F9;
+        }
+
+        .tech-logos {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .tech-logo {
+            padding: 1rem 1.5rem;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            font-weight: 600;
+            color: #94A3B8;
+            transition: all 0.3s ease;
+        }
+
+        .tech-logo:hover {
+            border-color: rgba(96, 165, 250, 0.5);
+            color: #60A5FA;
+            transform: translateY(-2px);
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 0;
+            color: #64748B;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+            margin-top: 4rem;
+        }
+
+        .authors {
+            margin-top: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .authors strong {
+            color: #E2E8F0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .hero-section {
+                padding: 2rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">🧠</div>
+            <h1>FlowSentinel</h1>
+            <p class="subtitle">AI-Powered Project Intelligence System</p>
+            
+            <div class="badges">
+                <span class="badge">IBM watsonx.ai</span>
+                <span class="badge">Granite 3 8B</span>
+                <span class="badge">FastAPI</span>
+                <span class="badge">PostgreSQL</span>
+                <span class="badge">React</span>
+            </div>
+
+            <div class="status">
+                <span class="status-dot"></span>
+                <span>Production Ready</span>
+            </div>
+        </header>
+
+        <div class="hero-section">
+            <h2 style="font-size: 2rem; margin-bottom: 1rem; text-align: center;">An autonomous AI agent that monitors your entire software development workflow</h2>
+            <p style="text-align: center; color: #94A3B8; font-size: 1.1rem; max-width: 800px; margin: 0 auto;">
+                FlowSentinel continuously ingests events from Slack, Jira, GitHub, and Calendar, analyzes them with IBM's Granite AI models, and autonomously responds to critical situations with zero human intervention.
+            </p>
+        </div>
+
+        <div class="cta-buttons">
+            <a href="https://github.com/Nabilhassan12345/flowsentinel" class="btn btn-primary" target="_blank">
+                📚 View Documentation
+            </a>
+            <a href="https://github.com/Nabilhassan12345/flowsentinel" class="btn btn-secondary" target="_blank">
+                ⭐ Star on GitHub
+            </a>
+            <a href="/api/docs" class="btn btn-secondary">
+                🔗 API Documentation
+            </a>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">37</div>
+                <div class="stat-label">API Endpoints</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">1,830</div>
+                <div class="stat-label">Lines of Code</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">88%</div>
+                <div class="stat-label">Test Coverage</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">7</div>
+                <div class="stat-label">Database Models</div>
+            </div>
+        </div>
+
+        <h2 style="font-size: 2rem; text-align: center; margin: 4rem 0 2rem; color: #F1F5F9;">Key Features</h2>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <div class="feature-title">Autonomous Agent</div>
+                <div class="feature-desc">
+                    Runs continuously every 5 minutes, monitoring last 24 hours of events automatically with zero human intervention
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <div class="feature-title">IBM watsonx.ai Integration</div>
+                <div class="feature-desc">
+                    Real Granite 3 8B Instruct model for intelligent blocker/risk detection and natural language Q&A
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔮</div>
+                <div class="feature-title">Predictive Intelligence</div>
+                <div class="feature-desc">
+                    Deadline risk scoring, bottleneck detection, team health monitoring, and 7-day forecasting
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">Advanced Analytics</div>
+                <div class="feature-desc">
+                    Event velocity tracking, response time analysis, temporal patterns, and risk scoring
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <div class="feature-title">Multi-Team Support</div>
+                <div class="feature-desc">
+                    Isolated event streams per team with team-specific analytics and state tracking
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔔</div>
+                <div class="feature-title">Webhook System</div>
+                <div class="feature-desc">
+                    Outbound webhooks with retry logic for external integrations and real-time notifications
+                </div>
+            </div>
+        </div>
+
+        <div class="tech-stack">
+            <h2>Built With</h2>
+            <div class="tech-logos">
+                <div class="tech-logo">Python 3.8+</div>
+                <div class="tech-logo">FastAPI</div>
+                <div class="tech-logo">IBM watsonx.ai</div>
+                <div class="tech-logo">PostgreSQL</div>
+                <div class="tech-logo">SQLAlchemy</div>
+                <div class="tech-logo">Docker</div>
+                <div class="tech-logo">React</div>
+                <div class="tech-logo">TypeScript</div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 FlowSentinel - IBM watsonx Challenge</p>
+            <div class="authors">
+                Built by <strong>Nabil Hassan</strong> (Lead Developer) & <strong>Abdulrahman</strong> (Contributor)
+            </div>
+            <p style="margin-top: 1rem;">
+                <a href="https://github.com/Nabilhassan12345/flowsentinel" style="color: #60A5FA; text-decoration: none;">GitHub Repository</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Add scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        document.querySelectorAll('.feature-card, .stat-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

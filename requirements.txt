@@ -1,49 +1,39 @@
-# FastAPI - Modern, fast web framework for building APIs with Python 3.8+
-# Provides automatic API documentation, request/response validation, and async support
+annotated-types==0.7.0
+anyio==3.7.1
+cachetools==6.2.2
+certifi==2025.11.12
+charset-normalizer==3.4.4
+click==8.3.1
 fastapi==0.104.1
-
-# Uvicorn - Lightning-fast ASGI server implementation
-# [standard] includes extra dependencies: watchfiles, httptools, uvloop, websockets
-# Used for running the FastAPI application in production
-uvicorn[standard]==0.24.0
-
-# Pydantic v2 - Data validation using Python type annotations
-# Provides robust data models with automatic validation and serialization
+h11==0.16.0
+httpcore==1.0.9
+httptools==0.7.1
+httpx==0.28.1
+ibm-cos-sdk==2.14.3
+ibm-cos-sdk-core==2.14.3
+ibm-cos-sdk-s3transfer==2.14.3
+ibm_watsonx_ai==1.4.7
+idna==3.11
+jmespath==1.0.1
+lomond==0.3.3
+numpy==2.3.5
+packaging==25.0
+pandas==2.2.3
 pydantic==2.5.0
-
-# HTTPX - Modern async HTTP client for Python
-# Used for making asynchronous HTTP requests (e.g., Slack webhook notifications)
-httpx==0.25.1
-
-# Requests - Simple, elegant HTTP library for synchronous requests
-# Backup HTTP client for sync operations and broader compatibility
-requests==2.31.0
-
-# Python-dotenv - Read key-value pairs from .env file and set them as environment variables
-# Used for managing configuration (API keys, webhook URLs) without hardcoding
+pydantic_core==2.14.1
+python-dateutil==2.9.0.post0
 python-dotenv==1.0.0
-
-# Python-dateutil - Extensions to the standard datetime module
-# Provides powerful date parsing and manipulation capabilities
-python-dateutil==2.8.2
-
-# SQLAlchemy - SQL toolkit and ORM for Python
-# Provides database abstraction layer for PostgreSQL, MySQL, SQLite
-sqlalchemy==2.0.23
-
-# Psycopg2 - PostgreSQL adapter for Python (binary version for easier installation)
-# Required for PostgreSQL database connections
-psycopg2-binary==2.9.9
-
-# Alembic - Database migration tool for SQLAlchemy
-# Manages database schema changes over time
-alembic==1.12.1
-
-# ============================================================================
-# Development Dependencies (Optional - for linting and testing)
-# ============================================================================
-# Uncomment these for local development and CI/CD pipelines
-
-# flake8==7.0.0          # Python linting tool
-# black==23.12.1         # Code formatter
-# pytest==7.4.3          # Testing framework
+pytz==2025.2
+PyYAML==6.0.3
+requests==2.32.5
+six==1.17.0
+sniffio==1.3.1
+starlette==0.27.0
+tabulate==0.9.0
+typing_extensions==4.15.0
+tzdata==2025.2
+urllib3==2.5.0
+uvicorn==0.24.0
+uvloop==0.22.1
+watchfiles==1.1.1
+websockets==15.0.1
