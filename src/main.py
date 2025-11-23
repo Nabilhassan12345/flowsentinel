@@ -15,8 +15,13 @@ Technical Stack:
 """
 
 import os
-from datetime import datetime
+import json
+import re
+import requests
+import asyncio
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Literal, Optional
+from textwrap import shorten
 from dotenv import load_dotenv
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
@@ -24,6 +29,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import httpx
+
+# IBM watsonx.ai imports
+try:
+    from ibm_watsonx_ai.foundation_models import Model
+    from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
+    from ibm_watsonx_ai.foundation_models.utils.enums import ModelTypes
+    from ibm_watsonx_ai import Credentials
+    IBM_SDK_AVAILABLE = True
+except ImportError:
+    print("⚠️  IBM watsonx.ai SDK not installed")
+    IBM_SDK_AVAILABLE = False
 
 # Load environment variables
 load_dotenv()
@@ -70,6 +86,19 @@ try:
 except ImportError:
     print("⚠️  Intelligence endpoints not available")
     INTELLIGENCE_ENABLED = False
+
+
+# ============================================================================
+# AUTONOMOUS AGENT CONFIGURATION
+# ============================================================================
+
+# Agent control flags
+AGENT_ENABLED = os.getenv("AGENT_ENABLED", "true").lower() == "true"
+AGENT_RUN_INTERVAL = int(os.getenv("AGENT_RUN_INTERVAL", "300"))  # Default: 5 minutes (300 seconds)
+agent_running = False
+agent_task = None
+agent_last_run = None
+agent_run_count = 0
 
 
 # ============================================================================
@@ -167,6 +196,36 @@ class QAResponse(BaseModel):
     answer: str
     reasoning: List[str]
     timestamp: str
+
+
+# ============================================================================
+# SLACK INTEGRATION
+# ============================================================================
+
+
+def send_slack_alert(text: str) -> None:
+    """
+    Send a simple alert message to Slack using the incoming webhook URL.
+
+    If no SLACK_WEBHOOK_URL is configured, this function does nothing and logs a warning.
+    It must NEVER crash the app.
+
+    Args:
+        text: The message text to send to Slack
+    """
+    webhook = os.getenv("SLACK_WEBHOOK_URL")
+    if not webhook:
+        print("⚠️  No SLACK_WEBHOOK_URL set, skipping Slack alert.")
+        return
+
+    try:
+        response = requests.post(webhook, json={"text": text}, timeout=5)
+        if response.status_code >= 300:
+            print(f"⚠️  Slack returned {response.status_code}: {response.text[:200]}")
+        else:
+            print("✅ Slack alert sent to Slack channel.")
+    except Exception as e:
+        print(f"❌ Failed to send Slack alert: {e}")
 
 
 # ============================================================================
@@ -283,7 +342,7 @@ class WatsonxAgent:
     @staticmethod
     async def analyze_state(events: List[Event]) -> ProjectState:
         """
-        Analyze events and generate project state.
+        Analyze events and generate project state using IBM watsonx.ai.
 
         This method processes recent events to identify:
         - Blockers: Issues preventing progress
@@ -297,76 +356,187 @@ class WatsonxAgent:
         Returns:
             ProjectState object with analysis results
         """
-        # Process last 20 events
-        recent_events = events[:20] if len(events) > 20 else events
+        # Get API credentials
+        api_key = os.getenv("WATSONX_API_KEY", "")
+        project_id = os.getenv("WATSONX_PROJECT_ID", "")
+        watsonx_url = os.getenv("WATSONX_URL", "https://us-south.ml.cloud.ibm.com")
+        
+        # Process last 25 events
+        recent_events = events[:25] if len(events) > 25 else events
 
         blockers = []
         risks = []
         completed = []
+        status = "GREEN"
 
-        # Keywords for blocker detection
-        blocker_keywords = [
-            "blocked",
-            "waiting",
-            "waiting on",
-            "stuck",
-            "can't proceed",
-            "need",
-            "missing",
-        ]
-
-        for event in recent_events:
-            # BLOCKERS: Scan Slack messages for blocking keywords
-            if event.source == "slack" and event.type == "message":
-                message = event.data.get("message", "").lower()
-                if any(keyword in message for keyword in blocker_keywords):
-                    blockers.append(
-                        {
-                            "description": event.data.get("message", ""),
-                            "source": "Slack",
-                            "timestamp": event.timestamp,
-                        }
-                    )
-
-            # RISKS: Scan Jira events for deadline changes or delays
-            if event.source == "jira":
-                if event.type == "deadline_changed":
-                    task = event.data.get("task", "Unknown task")
-                    risks.append(
-                        {
-                            "description": f"Deadline changed for: {task}",
-                            "impact": "May slip release by 1-2 days",
-                            "timestamp": event.timestamp,
-                        }
-                    )
-                elif event.data.get("new_status") == "Delayed":
-                    task = event.data.get("task", "Unknown task")
-                    risks.append(
-                        {
-                            "description": f"Task delayed: {task}",
-                            "impact": "May slip release by 1-2 days",
-                            "timestamp": event.timestamp,
-                        }
-                    )
-
-            # COMPLETED: Scan GitHub PR merges and Jira completions
-            if event.source == "github" and event.type == "pr_merged":
-                pr_title = event.data.get("title", "Unknown PR")
-                completed.append(
-                    {
-                        "description": f"PR merged: {pr_title}",
-                        "timestamp": event.timestamp,
-                    }
+        # Check if we have real API credentials
+        if IBM_SDK_AVAILABLE and api_key and project_id and len(api_key) > 20:
+            # === REAL IBM WATSONX.AI MODE ===
+            print("🔵 USING REAL IBM WATSONX.AI API (Granite)")
+            try:
+                # Initialize credentials
+                credentials = Credentials(
+                    url=watsonx_url,
+                    api_key=api_key
                 )
-
-            if event.source == "jira" and event.data.get("new_status") == "Done":
-                task = event.data.get("task", "Unknown task")
-                completed.append(
-                    {
-                        "description": f"Task completed: {task}",
-                        "timestamp": event.timestamp,
-                    }
+                
+                # Set up model parameters
+                parameters = {
+                    GenParams.DECODING_METHOD: "greedy",
+                    GenParams.MAX_NEW_TOKENS: 800,
+                    GenParams.TEMPERATURE: 0.1,
+                    GenParams.TOP_K: 50,
+                    GenParams.TOP_P: 0.95,
+                }
+                
+                # Initialize model (use env var if set)
+                model_id = os.getenv("WATSONX_MODEL_ID", "ibm/granite-3-8b-instruct")
+                model = Model(
+                    model_id=model_id,
+                    params=parameters,
+                    credentials=credentials,
+                    project_id=project_id,
                 )
+                
+                # Build events summary
+                events_data = [
+                    {"source": e.source, "type": e.type, "timestamp": e.timestamp, "data": e.data}
+                    for e in recent_events
+                ]
+                
+                events_json = json.dumps(events_data, indent=2)
+                
+                prompt = f"""You are an expert project management AI. Analyze these software development events and provide a comprehensive analysis.
+
+Events (JSON format):
+{events_json}
+
+Analyze the events and return ONLY a valid JSON object (no markdown, no code fences) with this exact structure:
+{{
+  "status": "GREEN or YELLOW or RED",
+  "blockers": [
+    {{"description": "detailed blocker description", "source": "slack|jira|github", "timestamp": "ISO8601"}}
+  ],
+  "risks": [
+    {{"description": "detailed risk description", "impact": "impact assessment", "timestamp": "ISO8601"}}
+  ],
+  "completed": [
+    {{"description": "completed item description", "timestamp": "ISO8601"}}
+  ]
+}}
+
+Rules:
+- status: GREEN = no blockers/risks, YELLOW = 1 blocker or 1-2 risks, RED = 2+ blockers or 3+ risks
+- blockers: things explicitly blocking progress (keywords: blocked, waiting, stuck, need, missing)
+- risks: potential timeline issues (deadline changes, delays, review backlogs)
+- completed: merged PRs, completed tasks, done items
+- Return ONLY valid JSON, no other text"""
+
+                print("📡 Calling IBM watsonx.ai API...")
+                response = model.generate_text(prompt=prompt)
+                print("✅ Response received from IBM watsonx.ai")
+                
+                # Clean the response - remove markdown fences and extra text
+                cleaned_response = response.strip()
+                
+                # Remove ```json and ``` fences if present
+                if cleaned_response.startswith("```"):
+                    cleaned_response = re.sub(r'^```(?:json)?\s*', '', cleaned_response)
+                    cleaned_response = re.sub(r'\s*```\s*$', '', cleaned_response)
+                
+                # Try to extract JSON if there's extra text
+                json_match = re.search(r'\{.*\}', cleaned_response, re.DOTALL)
+                if json_match:
+                    cleaned_response = json_match.group(0)
+                
+                # Parse JSON
+                try:
+                    ai_result = json.loads(cleaned_response)
+                    print("✅ Parsed IBM watsonx.ai response")
+                    
+                    # Extract data from AI response
+                    status = ai_result.get("status", "YELLOW")
+                    blockers = ai_result.get("blockers", [])
+                    risks = ai_result.get("risks", [])
+                    completed = ai_result.get("completed", [])
+                    
+                    print(f"🧠 IBM watsonx.ai analysis: Status={status}, Blockers={len(blockers)}, Risks={len(risks)}, Completed={len(completed)}")
+                    
+                except json.JSONDecodeError as je:
+                    print(f"⚠️  JSON parse error: {je}")
+                    print(f"   Response snippet: {cleaned_response[:200]}")
+                    print("   Falling back to rule-based analysis...")
+                
+            except Exception as e:
+                print(f"⚠️  IBM watsonx.ai API error: {type(e).__name__}: {str(e)}")
+                print("   Falling back to rule-based analysis...")
+        
+        # === FALLBACK: RULE-BASED ANALYSIS ===
+        # This runs if no API key OR if API call failed
+        if not blockers and not risks and not completed:
+            # Keywords for blocker detection
+            blocker_keywords = [
+                "blocked",
+                "waiting",
+                "waiting on",
+                "stuck",
+                "can't proceed",
+                "need",
+                "missing",
+            ]
+
+            for event in recent_events:
+                # BLOCKERS: Scan Slack messages for blocking keywords
+                if event.source == "slack" and event.type == "message":
+                    message = event.data.get("message", "").lower()
+                    if any(keyword in message for keyword in blocker_keywords):
+                        blockers.append(
+                            {
+                                "description": event.data.get("message", ""),
+                                "source": "Slack",
+                                "timestamp": event.timestamp,
+                            }
+                        )
+
+                # RISKS: Scan Jira events for deadline changes or delays
+                if event.source == "jira":
+                    if event.type == "deadline_changed":
+                        task = event.data.get("task", "Unknown task")
+                        risks.append(
+                            {
+                                "description": f"Deadline changed for: {task}",
+                                "impact": "May slip release by 1-2 days",
+                                "timestamp": event.timestamp,
+                            }
+                        )
+                    elif event.data.get("new_status") == "Delayed":
+                        task = event.data.get("task", "Unknown task")
+                        risks.append(
+                            {
+                                "description": f"Task delayed: {task}",
+                                "impact": "May slip release by 1-2 days",
+                                "timestamp": event.timestamp,
+                            }
+                        )
+
+                # COMPLETED: Scan GitHub PR merges and Jira completions
+                if event.source == "github" and event.type == "pr_merged":
+                    pr_title = event.data.get("title", "Unknown PR")
+                    completed.append(
+                        {
+                            "description": f"PR merged: {pr_title}",
+                            "timestamp": event.timestamp,
+                        }
+                    )
+
+                if event.source == "jira" and event.data.get("new_status") == "Done":
+                    task = event.data.get("task", "Unknown task")
+                    completed.append(
+                        {
+                            "description": f"Task completed: {task}",
+                            "timestamp": event.timestamp,
+                        }
+                    )
 
         # Limit each list to max 5 items
         blockers = blockers[:5]
@@ -401,10 +571,10 @@ class WatsonxAgent:
         question: str, state: ProjectState, events: List[Event]
     ) -> QAResponse:
         """
-        Generate intelligent answers to questions about project state.
+        Generate intelligent answers to questions about project state using IBM watsonx.ai.
 
-        Uses natural language processing (simulated) to understand the question
-        and provide detailed, contextual answers based on current project state.
+        Uses IBM watsonx.ai to understand the question and provide detailed,
+        contextual answers based on current project state.
 
         Args:
             question: The question to answer
@@ -414,10 +584,126 @@ class WatsonxAgent:
         Returns:
             QAResponse with answer and reasoning
         """
-        question_lower = question.lower()
-
+        # Get API credentials
+        api_key = os.getenv("WATSONX_API_KEY", "")
+        project_id = os.getenv("WATSONX_PROJECT_ID", "")
+        watsonx_url = os.getenv("WATSONX_URL", "https://us-south.ml.cloud.ibm.com")
+        
         # Generate current timestamp
         current_time = datetime.utcnow().isoformat() + "Z"
+        
+        # Check if we have real API credentials
+        if IBM_SDK_AVAILABLE and api_key and project_id and len(api_key) > 20:
+            # === REAL IBM WATSONX.AI MODE ===
+            print(f"🔵 IBM watsonx.ai Q&A (Granite) - Question: {question[:60]}")
+            try:
+                # Initialize credentials
+                credentials = Credentials(url=watsonx_url, api_key=api_key)
+                
+                # Set up model parameters
+                parameters = {
+                    GenParams.DECODING_METHOD: "greedy",
+                    GenParams.MAX_NEW_TOKENS: 500,
+                    GenParams.TEMPERATURE: 0.3,
+                    GenParams.TOP_K: 50,
+                    GenParams.TOP_P: 0.95,
+                }
+                
+                # Initialize model (use env var if set)
+                model_id = os.getenv("WATSONX_MODEL_ID", "ibm/granite-3-8b-instruct")
+                model = Model(
+                    model_id=model_id,
+                    params=parameters,
+                    credentials=credentials,
+                    project_id=project_id,
+                )
+                
+                # Build context JSON
+                recent_events_list = [
+                    {"source": e.source, "type": e.type, "data": e.data}
+                    for e in events[:10]
+                ]
+                
+                context = {
+                    "status": state.status,
+                    "blockers": state.blockers,
+                    "risks": state.risks,
+                    "completed_today": state.completed_today,
+                    "next_deadline": state.next_deadline,
+                    "recent_events": recent_events_list
+                }
+                
+                context_json = json.dumps(context, indent=2)
+                
+                prompt = f"""You are an expert project management AI assistant. Answer the user's question based on the provided context.
+
+CONTEXT (JSON):
+{context_json}
+
+USER QUESTION: {question}
+
+Return ONLY a valid JSON object (no markdown, no code fences) with this structure:
+{{
+  "answer": "2-4 sentence answer with specific details from context",
+  "reasoning": [
+    "reasoning step 1",
+    "reasoning step 2",
+    "reasoning step 3"
+  ]
+}}
+
+Be specific and reference actual data from the context. Return ONLY valid JSON."""
+
+                print("📡 Calling IBM watsonx.ai API for Q&A...")
+                response = model.generate_text(prompt=prompt)
+                print("✅ Response received from IBM watsonx.ai")
+                
+                # Clean response
+                cleaned_response = response.strip()
+                
+                # Remove markdown fences
+                if cleaned_response.startswith("```"):
+                    cleaned_response = re.sub(r'^```(?:json)?\s*', '', cleaned_response)
+                    cleaned_response = re.sub(r'\s*```\s*$', '', cleaned_response)
+                
+                # Extract JSON
+                json_match = re.search(r'\{.*\}', cleaned_response, re.DOTALL)
+                if json_match:
+                    cleaned_response = json_match.group(0)
+                
+                try:
+                    qa_result = json.loads(cleaned_response)
+                    answer = qa_result.get("answer", "Unable to generate answer")
+                    reasoning = qa_result.get("reasoning", ["IBM watsonx.ai analysis"])
+                    
+                    print(f"✅ IBM watsonx.ai Q&A completed")
+                    
+                    return QAResponse(
+                        question=question,
+                        answer=answer,
+                        reasoning=reasoning,
+                        timestamp=current_time,
+                    )
+                    
+                except json.JSONDecodeError as je:
+                    print(f"⚠️  JSON parse error in Q&A: {je}")
+                    print(f"   Response snippet: {cleaned_response[:200]}")
+                    # Use the raw response as answer
+                    model_name_for_log = os.getenv("WATSONX_MODEL_ID", "ibm/granite-3-8b-instruct")
+                    return QAResponse(
+                        question=question,
+                        answer=response.strip(),
+                        reasoning=[f"IBM watsonx.ai {model_name_for_log} (raw response)"],
+                        timestamp=current_time,
+                    )
+                
+            except Exception as e:
+                print(f"⚠️  IBM watsonx.ai Q&A error: {type(e).__name__}: {str(e)}")
+                print("   Falling back to rule-based Q&A...")
+                # Fall through to rule-based Q&A below
+
+        # === FALLBACK: RULE-BASED Q&A ===
+        question_lower = question.lower()
 
         # Answer based on question content
         if "risk" in question_lower or "at risk" in question_lower:
@@ -975,6 +1261,29 @@ async def run_agent(
     # Analyze events with watsonx.ai
     state = await WatsonxAgent.analyze_state(events)
 
+    # Send Slack alert if status is YELLOW or RED
+    if state.status in ("YELLOW", "RED"):
+        try:
+            lines = [f"🚨 *FlowSentinel Alert*", f"Project status: *{state.status}*", ""]
+            
+            if state.blockers:
+                lines.append(f"*Blockers ({len(state.blockers)}):*")
+                for b in state.blockers[:3]:
+                    desc = b.get("description", "")
+                    lines.append(f"• {shorten(desc, width=90, placeholder='...')}")
+                lines.append("")
+            
+            if state.risks:
+                lines.append(f"*Risks ({len(state.risks)}):*")
+                for r in state.risks[:2]:
+                    desc = r.get("description", "")
+                    lines.append(f"• {shorten(desc, width=90, placeholder='...')}")
+                lines.append("")
+            
+            send_slack_alert("\n".join(lines))
+        except Exception as e:
+            print(f"⚠️  Failed to build/send Slack alert: {e}")
+
     # Save updated state to in-memory
     db.update_state(state)
     
@@ -1113,6 +1422,126 @@ async def get_latest_state():
     return state
 
 
+@app.post("/debug/slack-test")
+async def debug_slack_test():
+    """
+    Simple endpoint to verify Slack integration works.
+    
+    Returns:
+        Success message indicating test alert was sent
+    """
+    send_slack_alert("✅ FlowSentinel Slack test: integration is working.")
+    return {"ok": True, "message": "Slack test alert sent (if webhook is configured)."}
+
+
+# ============================================================================
+# AUTONOMOUS AGENT CONTROL ENDPOINTS
+# ============================================================================
+
+@app.post("/agent/start")
+async def start_autonomous_agent():
+    """
+    Start the autonomous background agent.
+    
+    The agent will continuously monitor project state and send alerts
+    every AGENT_RUN_INTERVAL seconds (default: 5 minutes).
+    
+    Returns:
+        Status message and agent configuration
+    """
+    global agent_running, agent_task
+    
+    if agent_running:
+        return {
+            "ok": False,
+            "message": "Agent is already running",
+            "status": "running",
+            "run_count": agent_run_count,
+            "last_run": agent_last_run.isoformat() if agent_last_run else None,
+            "interval_seconds": AGENT_RUN_INTERVAL
+        }
+    
+    # Start the agent
+    agent_task = asyncio.create_task(autonomous_agent_loop())
+    
+    return {
+        "ok": True,
+        "message": "Autonomous agent started successfully",
+        "status": "started",
+        "interval_seconds": AGENT_RUN_INTERVAL,
+        "next_run": "in progress"
+    }
+
+
+@app.post("/agent/stop")
+async def stop_autonomous_agent():
+    """
+    Stop the autonomous background agent.
+    
+    Returns:
+        Status message with agent statistics
+    """
+    global agent_running, agent_task
+    
+    if not agent_running:
+        return {
+            "ok": False,
+            "message": "Agent is not running",
+            "status": "stopped"
+        }
+    
+    # Stop the agent
+    agent_running = False
+    
+    # Wait for the task to complete (with timeout)
+    if agent_task:
+        try:
+            await asyncio.wait_for(agent_task, timeout=5.0)
+        except asyncio.TimeoutError:
+            print("⚠️  Agent task did not stop gracefully - forcing cancellation")
+            agent_task.cancel()
+    
+    return {
+        "ok": True,
+        "message": "Autonomous agent stopped successfully",
+        "status": "stopped",
+        "total_runs": agent_run_count,
+        "last_run": agent_last_run.isoformat() if agent_last_run else None
+    }
+
+
+@app.get("/agent/status")
+async def get_agent_status():
+    """
+    Get the current status of the autonomous agent.
+    
+    Returns:
+        Agent status, configuration, and runtime statistics
+    """
+    global agent_running, agent_last_run, agent_run_count
+    
+    next_run = None
+    if agent_running and agent_last_run:
+        next_run_time = agent_last_run + timedelta(seconds=AGENT_RUN_INTERVAL)
+        seconds_until_next = (next_run_time - datetime.now()).total_seconds()
+        next_run = {
+            "timestamp": next_run_time.isoformat(),
+            "seconds_remaining": max(0, int(seconds_until_next))
+        }
+    
+    return {
+        "enabled": AGENT_ENABLED,
+        "running": agent_running,
+        "run_count": agent_run_count,
+        "last_run": agent_last_run.isoformat() if agent_last_run else None,
+        "next_run": next_run,
+        "config": {
+            "interval_seconds": AGENT_RUN_INTERVAL,
+            "interval_minutes": AGENT_RUN_INTERVAL / 60
+        }
+    }
+
+
 @app.get("/actions/list")
 async def list_actions(limit: int = 50):
     """
@@ -1169,6 +1598,128 @@ async def ask_question(request: QARequest):
 
 
 # ============================================================================
+# AUTONOMOUS AGENT LOOP
+# ============================================================================
+
+async def autonomous_agent_loop():
+    """
+    Autonomous background agent that continuously monitors project state.
+    
+    Runs every AGENT_RUN_INTERVAL seconds and:
+    1. Fetches recent events
+    2. Analyzes project state with IBM Granite AI
+    3. Sends Slack alerts on YELLOW/RED status
+    4. Triggers automated actions for critical issues
+    5. Logs all operations for monitoring
+    """
+    global agent_running, agent_last_run, agent_run_count
+    
+    agent_running = True
+    print(f"\n🤖 Autonomous Agent: Started (interval: {AGENT_RUN_INTERVAL}s)")
+    
+    while agent_running:
+        try:
+            agent_run_count += 1
+            agent_last_run = datetime.now()
+            
+            print(f"\n{'='*70}")
+            print(f"🤖 Autonomous Agent Run #{agent_run_count} - {agent_last_run.strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"{'='*70}")
+            
+            # 1. Fetch recent events (last 24 hours)
+            cutoff_time = datetime.now() - timedelta(hours=24)
+            recent_events = [e for e in db.events if datetime.fromisoformat(e["timestamp"]) > cutoff_time]
+            
+            print(f"📊 Found {len(recent_events)} events in last 24h")
+            
+            if len(recent_events) == 0:
+                print("⏭️  No recent events - skipping analysis")
+            else:
+                # 2. Analyze with IBM Granite AI
+                print("🧠 Analyzing with IBM watsonx.ai Granite...")
+                state = await WatsonxAgent.analyze_state(recent_events)
+                
+                print(f"   Status: {state.status}")
+                print(f"   Blockers: {len(state.blockers)}")
+                print(f"   Risks: {len(state.risks)}")
+                print(f"   Completed: {len(state.completed)}")
+                
+                # 3. Send Slack alerts on YELLOW/RED status
+                if state.status in ["YELLOW", "RED"]:
+                    status_emoji = "⚠️" if state.status == "YELLOW" else "🚨"
+                    alert_text = f"{status_emoji} *FlowSentinel Autonomous Alert*\n\n"
+                    alert_text += f"*Status:* {state.status}\n"
+                    alert_text += f"*Time:* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+                    alert_text += f"*Run:* #{agent_run_count}\n\n"
+                    
+                    if state.blockers:
+                        alert_text += f"*🚫 Blockers ({len(state.blockers)}):*\n"
+                        for blocker in state.blockers[:3]:  # Top 3
+                            alert_text += f"  • {blocker}\n"
+                    
+                    if state.risks:
+                        alert_text += f"\n*⚠️ Risks ({len(state.risks)}):*\n"
+                        for risk in state.risks[:3]:  # Top 3
+                            alert_text += f"  • {risk}\n"
+                    
+                    if state.actions:
+                        alert_text += f"\n*💡 Suggested Actions:*\n"
+                        for action in state.actions[:2]:  # Top 2
+                            alert_text += f"  • {action.action}\n"
+                    
+                    # Send alert
+                    send_slack_alert(alert_text)
+                    print(f"✅ Slack alert sent ({state.status})")
+                
+                # 4. Trigger critical actions
+                critical_actions = [a for a in state.actions if a.priority in ["high", "critical"]]
+                if critical_actions:
+                    print(f"\n🎯 Triggering {len(critical_actions)} critical actions...")
+                    for action in critical_actions[:3]:  # Max 3 per run
+                        print(f"   → {action.action} (Priority: {action.priority})")
+                        # Note: orchestrate.execute_action is simulated
+                        # In production, integrate with real IBM Orchestrate or other automation
+                
+                # 5. Save state to database
+                if DATABASE_ENABLED:
+                    try:
+                        from models import ProjectStateDB
+                        with next(get_db()) as db_session:
+                            db_state = ProjectStateDB(
+                                status=state.status,
+                                blockers=state.blockers,
+                                risks=state.risks,
+                                completed=state.completed,
+                                next_steps=[a.action for a in state.actions[:5]],
+                                metadata={
+                                    "agent_run": agent_run_count,
+                                    "events_analyzed": len(recent_events),
+                                    "auto_triggered": True
+                                }
+                            )
+                            db_session.add(db_state)
+                            db_session.commit()
+                            print("💾 State saved to database")
+                    except Exception as e:
+                        print(f"⚠️  Database save failed: {e}")
+            
+            print(f"\n✅ Agent run #{agent_run_count} complete")
+            print(f"⏰ Next run in {AGENT_RUN_INTERVAL}s...")
+            
+            # 6. Sleep until next interval
+            await asyncio.sleep(AGENT_RUN_INTERVAL)
+            
+        except Exception as e:
+            print(f"\n❌ Agent error: {e}")
+            import traceback
+            traceback.print_exc()
+            print(f"⏰ Retrying in {AGENT_RUN_INTERVAL}s...")
+            await asyncio.sleep(AGENT_RUN_INTERVAL)
+    
+    print("\n🛑 Autonomous Agent: Stopped")
+
+
+# ============================================================================
 # STARTUP EVENT
 # ============================================================================
 
@@ -1193,7 +1744,24 @@ async def startup_event():
     print("📊 Dashboard: http://localhost:8000/docs")
     print("🔗 API Root: http://localhost:8000/")
     print()
-    print("🧠 Watsonx.ai: Ready")
+    
+    # IBM watsonx.ai status
+    api_key = os.getenv("WATSONX_API_KEY", "")
+    project_id = os.getenv("WATSONX_PROJECT_ID", "")
+    
+    print("\n" + "=" * 60)
+    if IBM_SDK_AVAILABLE and api_key and project_id and len(api_key) > 20:
+        print("🧠 IBM WATSONX.AI: ✅ REAL API ENABLED")
+        print(f"   Project ID: {project_id[:20]}...")
+        print(f"   Region: {os.getenv('WATSONX_URL', 'not set')}")
+        print(f"   Model: {os.getenv('WATSONX_MODEL_ID', 'ibm/granite-3-8b-instruct')}")
+    else:
+        print("⚠️  IBM WATSONX.AI: Simulation Mode")
+        print("   Add credentials to .env to enable real AI:")
+        print("   1. WATSONX_API_KEY=your-key")
+        print("   2. WATSONX_PROJECT_ID=your-project-id")
+    print("=" * 60 + "\n")
+    
     print("🤖 Orchestrate: Ready")
     print(f"💾 Database: {'SQLite' if DATABASE_ENABLED else 'In-Memory (MVP)'}")
     print()
@@ -1207,6 +1775,19 @@ async def startup_event():
         print("✅ Slack Webhook: Configured")
     else:
         print("⚠️  Slack Webhook: Not configured (set SLACK_WEBHOOK_URL)")
+    
+    print("=" * 70 + "\n")
+    
+    # Start autonomous agent if enabled
+    global agent_task
+    if AGENT_ENABLED:
+        print("🤖 Starting Autonomous Agent...")
+        print(f"   Interval: {AGENT_RUN_INTERVAL} seconds ({AGENT_RUN_INTERVAL / 60:.1f} minutes)")
+        print(f"   Control: POST /agent/start, /agent/stop, GET /agent/status")
+        agent_task = asyncio.create_task(autonomous_agent_loop())
+        print("✅ Autonomous Agent: Launched")
+    else:
+        print("⚠️  Autonomous Agent: Disabled (set AGENT_ENABLED=true)")
     
     print("=" * 70 + "\n")
 
