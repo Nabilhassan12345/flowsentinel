@@ -1,10 +1,10 @@
 [build]
-  base = "."
-  publish = "public"
-  command = "npm run build"
+  base = "frontend"
+  publish = "frontend/dist"
+  command = "npm install && npm run build"
 
 [build.environment]
-  PYTHON_VERSION = "3.11"
+  NODE_VERSION = "20"
 
 [[redirects]]
   from = "/api/*"

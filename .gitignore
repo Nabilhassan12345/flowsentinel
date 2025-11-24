@@ -61,3 +61,18 @@ htmlcov/
 flowsentinel.db
 alembic/versions/*.py
 !alembic/versions/__init__.py
+
+# Node
+node_modules/
+.npm
+*.tgz
+
+# Build
+dist/
+build/
+*.bundle.js
+
+# Temporary files
+*.tmp
+*.temp
+server.log
