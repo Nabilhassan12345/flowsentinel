@@ -8,6 +8,13 @@ An autonomous AI agent that monitors software development workflows in real-time
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.121-green)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-18-61dafb)](https://reactjs.org/)
 [![IBM watsonx.ai](https://img.shields.io/badge/IBM-watsonx.ai-blue)](https://www.ibm.com/watsonx)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/6b85e6-flourishing-fenglisu/deploy-status)](https://app.netlify.com/sites/flowsentinel/deploys)
+
+## 🌐 Live Demo
+
+- **Frontend**: [https://flowsentinel.netlify.app](https://flowsentinel.netlify.app)
+- **Backend API**: _Deploy to Render.com (see deployment guide below)_
+- **API Documentation**: `/docs` endpoint when backend is running
 
 ---
 
