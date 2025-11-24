@@ -10,11 +10,11 @@ An autonomous AI agent that monitors software development workflows in real-time
 [![IBM watsonx.ai](https://img.shields.io/badge/IBM-watsonx.ai-blue)](https://www.ibm.com/watsonx)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/6b85e6-flourishing-fenglisu/deploy-status)](https://app.netlify.com/sites/flowsentinel/deploys)
 
-## 🌐 Live Demo
+## 🌐 Demo
 
-- **Frontend**: [https://flowsentinel.netlify.app](https://flowsentinel.netlify.app)
-- **Backend API**: _Deploy to Render.com (see deployment guide below)_
-- **API Documentation**: `/docs` endpoint when backend is running
+- **Frontend**: [https://flowsentinel.netlify.app](https://flowsentinel.netlify.app) ✅ **LIVE**
+- **Backend API**: Not yet deployed - [Deploy to Render.com](docs/DEPLOYMENT.md) (10 min setup)
+- **Local Development**: Follow [Quick Start](#-quick-start) below
 
 ---
 
