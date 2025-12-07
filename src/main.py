@@ -87,6 +87,41 @@ except ImportError:
     print("⚠️  Intelligence endpoints not available")
     INTELLIGENCE_ENABLED = False
 
+try:
+    from rag_endpoints import router as rag_router
+    RAG_ENABLED = True
+except ImportError:
+    print("⚠️  RAG endpoints not available")
+    RAG_ENABLED = False
+
+try:
+    from agent_endpoints import router as agent_router
+    AGENT_ENABLED = True
+except ImportError:
+    print("⚠️  Agent endpoints not available")
+    AGENT_ENABLED = False
+
+try:
+    from feedback_endpoints import router as feedback_router
+    FEEDBACK_ENABLED = True
+except ImportError:
+    print("⚠️  Feedback endpoints not available")
+    FEEDBACK_ENABLED = False
+
+try:
+    from pattern_endpoints import router as pattern_router
+    PATTERNS_ENABLED = True
+except ImportError:
+    print("⚠️  Pattern endpoints not available")
+    PATTERNS_ENABLED = False
+
+try:
+    from streaming_endpoints import router as streaming_router
+    STREAMING_ENABLED = True
+except ImportError:
+    print("⚠️  Streaming endpoints not available")
+    STREAMING_ENABLED = False
+
 
 # ============================================================================
 # AUTONOMOUS AGENT CONFIGURATION
@@ -910,6 +945,21 @@ if WEBHOOKS_ENABLED:
     
 if INTELLIGENCE_ENABLED:
     app.include_router(intelligence_router, tags=["intelligence"])
+
+if RAG_ENABLED:
+    app.include_router(rag_router, tags=["rag"])
+
+if AGENT_ENABLED:
+    app.include_router(agent_router, tags=["agent"])
+
+if FEEDBACK_ENABLED:
+    app.include_router(feedback_router, tags=["feedback"])
+
+if PATTERNS_ENABLED:
+    app.include_router(pattern_router, tags=["patterns"])
+
+if STREAMING_ENABLED:
+    app.include_router(streaming_router, tags=["streaming"])
 
 
 # ============================================================================

@@ -326,6 +326,40 @@ class AnalyticsDB(Base):
         return f"<Analytics(id={self.id}, metric={self.metric_name}, value={self.metric_value}, timestamp={self.timestamp})>"
 
 
+class EmbeddingDB(Base):
+    """
+    Tracks embedding status for events.
+    
+    Used to know which events have been indexed in the vector store
+    and when they were last updated.
+    """
+
+    __tablename__ = "embeddings"
+
+    # Primary key (matches event_id)
+    event_id = Column(String(36), primary_key=True)
+
+    # Embedding metadata
+    embedded_at = Column(DateTime, default=utc_now, nullable=False)
+    model_name = Column(String(100), nullable=True)  # Model used for embedding
+    vector_id = Column(String(100), nullable=True)  # ID in vector store
+    
+    # Content hash to detect if re-embedding is needed
+    content_hash = Column(String(64), nullable=True)
+
+    # Multi-tenant support
+    team_id = Column(String(36), nullable=True, index=True)
+
+    # Indexes for performance
+    __table_args__ = (
+        Index("idx_embeddings_team", "team_id"),
+        Index("idx_embeddings_model", "model_name"),
+    )
+
+    def __repr__(self):
+        return f"<Embedding(event_id={self.event_id}, model={self.model_name}, embedded_at={self.embedded_at})>"
+
+
 # ============================================================================
 # MODEL UTILITIES
 # ============================================================================
