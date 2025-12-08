@@ -81,6 +81,29 @@ services:
       - key: SECRET_KEY
         generateValue: true  # Auto-generate secure key
       
+      # Agent configuration
+      - key: AGENT_ENABLED
+        value: "true"
+      
+      - key: AGENT_RUN_INTERVAL
+        value: "300"
+      
+      # Worker pool (Phase 9)
+      - key: NUM_WORKERS
+        value: "4"
+      
+      # Rate limiting (Phase 8)
+      - key: RATE_LIMIT_REQUESTS
+        value: "100"
+      
+      # Monitoring (Phase 10)
+      - key: METRICS_ENABLED
+        value: "true"
+      
+      # Optional: Redis for caching (set in Render dashboard if needed)
+      - key: REDIS_URL
+        sync: false
+      
       # Optional: Slack integration (set in Render dashboard)
       - key: SLACK_WEBHOOK_URL
         sync: false  # Set manually in dashboard

@@ -361,6 +361,225 @@ class EmbeddingDB(Base):
 
 
 # ============================================================================
+# PHASE 7-10 MODELS: Memory, Security, Scalability, Reliability
+# ============================================================================
+
+
+class ConversationDB(Base):
+    """
+    Stores AI conversation sessions for memory persistence.
+    Phase 7: Conversation Memory
+    """
+    __tablename__ = "conversations"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(100), nullable=False, index=True)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
+    summary = Column(Text, nullable=True)
+    extra_data = Column(JSON, default=dict)  # Renamed from metadata
+    team_id = Column(String(36), nullable=True, index=True)
+
+    __table_args__ = (
+        Index("idx_conversations_user", "user_id", "created_at"),
+    )
+
+
+class MemoryEntryDB(Base):
+    """
+    Stores individual memory entries (messages) in conversations.
+    Phase 7: Conversation Memory
+    """
+    __tablename__ = "memory_entries"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    conversation_id = Column(String(36), nullable=False, index=True)
+    user_id = Column(String(100), nullable=False, index=True)
+    role = Column(String(20), nullable=False)  # user, assistant, system
+    content = Column(Text, nullable=False)
+    timestamp = Column(DateTime, default=utc_now, nullable=False)
+    memory_type = Column(String(20), default="short_term")  # short_term, long_term, semantic
+    importance = Column(Float, default=0.5)
+    access_count = Column(Integer, default=0)
+    last_accessed = Column(DateTime, nullable=True)
+    extra_data = Column(JSON, default=dict)  # Renamed from metadata
+
+    __table_args__ = (
+        Index("idx_memory_conversation", "conversation_id", "timestamp"),
+        Index("idx_memory_user_type", "user_id", "memory_type"),
+    )
+
+
+class UserDB(Base):
+    """
+    Stores user accounts for authentication.
+    Phase 8: Security & Auth
+    """
+    __tablename__ = "users"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    password_hash = Column(String(255), nullable=False)
+    role = Column(String(20), default="user")  # admin, user, readonly
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+    last_login = Column(DateTime, nullable=True)
+    is_active = Column(Boolean, default=True)
+    extra_data = Column(JSON, default=dict)  # Renamed from metadata
+    team_id = Column(String(36), nullable=True, index=True)
+
+
+class APIKeyDB(Base):
+    """
+    Stores API keys for service authentication.
+    Phase 8: Security & Auth
+    """
+    __tablename__ = "api_keys"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    key_hash = Column(String(255), nullable=False, index=True)
+    name = Column(String(100), nullable=False)
+    user_id = Column(String(36), nullable=False, index=True)
+    scopes = Column(JSON, default=list)  # ["read", "write", "admin"]
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+    expires_at = Column(DateTime, nullable=True)
+    last_used = Column(DateTime, nullable=True)
+    is_active = Column(Boolean, default=True)
+
+
+class AuditLogDB(Base):
+    """
+    Stores security audit logs.
+    Phase 8: Security & Auth
+    """
+    __tablename__ = "audit_logs"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    timestamp = Column(DateTime, default=utc_now, nullable=False, index=True)
+    action = Column(String(100), nullable=False, index=True)
+    user_id = Column(String(36), nullable=True, index=True)
+    ip_address = Column(String(50), nullable=True)
+    details = Column(JSON, default=dict)
+    severity = Column(String(20), default="info")  # info, warning, error, critical
+
+    __table_args__ = (
+        Index("idx_audit_user_action", "user_id", "action"),
+    )
+
+
+class CacheEntryDB(Base):
+    """
+    Stores persistent cache entries (Redis backup).
+    Phase 9: Scalability
+    """
+    __tablename__ = "cache_entries"
+
+    key = Column(String(255), primary_key=True)
+    value = Column(JSON, nullable=False)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+    expires_at = Column(DateTime, nullable=False, index=True)
+    hits = Column(Integer, default=0)
+
+
+class TaskDB(Base):
+    """
+    Stores background task records.
+    Phase 9: Scalability
+    """
+    __tablename__ = "tasks"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    name = Column(String(100), nullable=False, index=True)
+    state = Column(String(20), default="pending", index=True)  # pending, running, completed, failed
+    priority = Column(Integer, default=2)  # 0=critical, 4=background
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+    started_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+    result = Column(JSON, nullable=True)
+    error = Column(Text, nullable=True)
+    retries = Column(Integer, default=0)
+    max_retries = Column(Integer, default=3)
+    extra_data = Column(JSON, default=dict)  # Renamed from metadata
+
+    __table_args__ = (
+        Index("idx_tasks_state_priority", "state", "priority"),
+    )
+
+
+class HealthCheckDB(Base):
+    """
+    Stores health check history.
+    Phase 10: Reliability
+    """
+    __tablename__ = "health_checks"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    timestamp = Column(DateTime, default=utc_now, nullable=False, index=True)
+    service = Column(String(100), nullable=False, index=True)
+    status = Column(String(20), nullable=False)  # healthy, degraded, unhealthy
+    response_time_ms = Column(Float, nullable=True)
+    error = Column(Text, nullable=True)
+    details = Column(JSON, default=dict)
+
+
+class MetricDB(Base):
+    """
+    Stores application metrics for monitoring.
+    Phase 10: Reliability
+    """
+    __tablename__ = "metrics"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    timestamp = Column(DateTime, default=utc_now, nullable=False, index=True)
+    name = Column(String(100), nullable=False, index=True)
+    value = Column(Float, nullable=False)
+    labels = Column(JSON, default=dict)
+    metric_type = Column(String(20), default="gauge")  # counter, gauge, histogram
+
+    __table_args__ = (
+        Index("idx_metrics_name_time", "name", "timestamp"),
+    )
+
+
+class FeedbackDB(Base):
+    """
+    Stores AI response feedback for evaluation.
+    Phase 3: Evaluation & Feedback
+    """
+    __tablename__ = "feedback"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    response_id = Column(String(100), nullable=False, index=True)
+    query = Column(Text, nullable=False)
+    response = Column(Text, nullable=False)
+    rating = Column(Integer, nullable=True)  # 1-5
+    feedback_type = Column(String(20), default="thumbs")  # thumbs, rating, text
+    is_correct = Column(Boolean, nullable=True)
+    user_feedback = Column(Text, nullable=True)
+    timestamp = Column(DateTime, default=utc_now, nullable=False)
+    user_id = Column(String(36), nullable=True, index=True)
+    extra_data = Column(JSON, default=dict)  # Renamed from metadata
+
+
+class PatternDB(Base):
+    """
+    Stores detected patterns for similarity matching.
+    Phase 4: Pattern Matching
+    """
+    __tablename__ = "patterns"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    pattern_type = Column(String(50), nullable=False, index=True)
+    description = Column(Text, nullable=False)
+    events = Column(JSON, default=list)  # List of event IDs
+    confidence = Column(Float, default=0.0)
+    detected_at = Column(DateTime, default=utc_now, nullable=False)
+    resolved_at = Column(DateTime, nullable=True)
+    resolution = Column(Text, nullable=True)
+    extra_data = Column(JSON, default=dict)  # Renamed from metadata
+    team_id = Column(String(36), nullable=True, index=True)
+
+
+# ============================================================================
 # MODEL UTILITIES
 # ============================================================================
 

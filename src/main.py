@@ -122,6 +122,27 @@ except ImportError:
     print("⚠️  Streaming endpoints not available")
     STREAMING_ENABLED = False
 
+try:
+    from memory_endpoints import router as memory_router
+    MEMORY_ENABLED = True
+except ImportError:
+    print("⚠️  Memory endpoints not available")
+    MEMORY_ENABLED = False
+
+try:
+    from security_endpoints import router as security_router
+    SECURITY_ENABLED = True
+except ImportError:
+    print("⚠️  Security endpoints not available")
+    SECURITY_ENABLED = False
+
+try:
+    from monitoring_endpoints import router as monitoring_router
+    MONITORING_ENABLED = True
+except ImportError:
+    print("⚠️  Monitoring endpoints not available")
+    MONITORING_ENABLED = False
+
 
 # ============================================================================
 # AUTONOMOUS AGENT CONFIGURATION
@@ -961,6 +982,15 @@ if PATTERNS_ENABLED:
 if STREAMING_ENABLED:
     app.include_router(streaming_router, tags=["streaming"])
 
+if MEMORY_ENABLED:
+    app.include_router(memory_router, tags=["memory"])
+
+if SECURITY_ENABLED:
+    app.include_router(security_router, tags=["security"])
+
+if MONITORING_ENABLED:
+    app.include_router(monitoring_router, tags=["monitoring"])
+
 
 # ============================================================================
 # API ENDPOINTS
@@ -1775,8 +1805,21 @@ async def autonomous_agent_loop():
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database and print startup information."""
-    # Initialize database if enabled
+    """Initialize database, services, and print startup information."""
+    
+    # Initialize all services (Memory, Security, Cache, Workers, etc.)
+    try:
+        from init_services import initialize_all_services
+        init_results = await initialize_all_services()
+        print("\n🔧 Service Initialization:")
+        for service, status in init_results.items():
+            if service not in ["started_at", "all_initialized", "errors"]:
+                emoji = "✅" if status not in [False] else "❌"
+                print(f"   {emoji} {service.title()}: {status}")
+    except Exception as e:
+        print(f"⚠️  Service initialization error: {e}")
+    
+    # Initialize database if enabled (legacy - also handled by init_services)
     if DATABASE_ENABLED:
         try:
             init_db()
@@ -1840,6 +1883,33 @@ async def startup_event():
         print("⚠️  Autonomous Agent: Disabled (set AGENT_ENABLED=true)")
     
     print("=" * 70 + "\n")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Gracefully shutdown all services."""
+    global agent_task, agent_running
+    
+    print("\n🛑 Shutting down FlowSentinel...")
+    
+    # Stop autonomous agent
+    if agent_task:
+        agent_running = False
+        agent_task.cancel()
+        try:
+            await agent_task
+        except asyncio.CancelledError:
+            pass
+        print("✅ Autonomous Agent stopped")
+    
+    # Shutdown all services
+    try:
+        from init_services import shutdown_all_services
+        await shutdown_all_services()
+    except Exception as e:
+        print(f"⚠️  Service shutdown error: {e}")
+    
+    print("👋 FlowSentinel shutdown complete")
 
 
 def print_startup_info():
