@@ -2,7 +2,10 @@
 
 > **AI-Powered Autonomous Project Intelligence System for IBM watsonx Challenge 2025**
 
-An enterprise-grade autonomous AI agent that monitors software development workflows in real-time, analyzes events using **IBM watsonx.ai Granite 3 8B Instruct**, and automatically responds to critical situations with zero human intervention.
+![FlowSentinel project dashboard](docs/screenshots/dashboard.png)
+
+
+An autonomous AI agent that monitors software development workflows in real-time, analyzes events using **IBM watsonx.ai Granite 3 8B Instruct**, and can respond automatically to critical events.
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.121-green)](https://fastapi.tiangolo.com/)
